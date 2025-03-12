@@ -28,20 +28,20 @@ func ConnectWeb(db *sql.DB) {
 	// Define routes
 	http.HandleFunc("/", mainPageHandler)
 
-	fmt.Println("Listening on: http://localhost:8989/")
-	if err := http.ListenAndServe("0.0.0.0:8989", nil); err != nil {
+	fmt.Println("Listening on: http://localhost:8888/")
+	if err := http.ListenAndServe("0.0.0.0:8888", nil); err != nil {
 		fmt.Println("Error starting server:", err)
 	}
 }
 
 func mainPageHandler(w http.ResponseWriter, r *http.Request) {
 	path := r.URL.Path
-	if path != "/" && path != "/logIn" && path != "/signup" && path != "/aboutUs" && path != "/createPost" && path != "/postsPage" {
+	if path != "/"  {
 		
 		return
 	}
 
-	tmpl, err := template.ParseFiles("../templates/mainPage.html")
+	tmpl, err := template.ParseFiles("templates/mainPage.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
         http.Error(w, "Internal Server Error 1", http.StatusInternalServerError)

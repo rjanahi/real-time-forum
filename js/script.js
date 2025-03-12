@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logInButton = document.getElementById('logInButton');
 
     // Function to show a section and hide others
-    function showSection(sectionToShow) {
+    function showSection(sectionToShow, urlSuffix) {
         mainSection.hidden = true;
         signUpSection.hidden = true;
         logInSection.hidden = true;
@@ -23,133 +23,79 @@ document.addEventListener('DOMContentLoaded', () => {
         createPostSection.hidden = true;
         aboutUsSection.hidden = true;
         sectionToShow.hidden = false;
+
+        // Update the URL
+        history.pushState(null, '', urlSuffix);
     }
 
     // Event listeners for buttons
     signUpButton.addEventListener('click', () => {
-        showSection(signUpSection);
+        showSection(signUpSection, '/signup');
     });
 
     logInButton.addEventListener('click', () => {
-        showSection(logInSection);
+        showSection(logInSection, '/login');
     });
 
     postsButton.addEventListener('click', () => {
-        showSection(postPageSection);
+        showSection(postPageSection, '/posts');
     });
 
     createPostButton.addEventListener('click', () => {
-        showSection(createPostSection);
+        showSection(createPostSection, '/create-post');
     });
 
     aboutUsButton.addEventListener('click', () => {
-        showSection(aboutUsSection);
+        showSection(aboutUsSection, '/about-us');
     });
-
-    
 
     // Initialize by showing the main section
-    showSection(mainSection);
+    showSection(mainSection, '/');
+
+    // Registration form submission
+    document.getElementById('registrationForm').addEventListener('submit', function(event) {
+        event.preventDefault(); // Prevent the default form submission
+
+        const formData = {
+            username: document.getElementById('username').value,
+            fname: document.getElementById('fname').value,
+            lname: document.getElementById('lname').value,
+            email: document.getElementById('email').value,
+            age: document.getElementById('age').value,
+            gender: document.getElementById('gender').value,
+            password: document.getElementById('password').value,
+        };
+
+        fetch('/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData),
+        })
+        .then(response => {
+            // Log response status and text to debug
+            console.log("Response status:", response.status);
+            return response.text().then(text => {
+                console.log("Response text:", text); // Log raw response
+                return text ? JSON.parse(text) : {}; // Parse JSON or return empty object
+            });
+        })
+        .then(data => {
+            const feedbackMessage = document.getElementById('feedbackMessage');
+            if (data.success) {
+                feedbackMessage.textContent = 'Registration successful!';
+                feedbackMessage.style.color = 'green';
+                document.getElementById('registrationForm').reset();
+                showSection(logInSection, '/login'); // Navigate to login section
+            } else {
+                feedbackMessage.textContent = data.message || 'Registration failed.';
+                feedbackMessage.style.color = 'red';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('feedbackMessage').textContent = 'An error occurred. Please try again.';
+        });
+    });
 });
-
-// Fetch likes and dislikes count for each post
-function getInteractions(id, type) {
-    let body = {};
-    let likesElementId, dislikesElementId;
-
-    if (type === 'post') {
-        body.post_id = id;
-        likesElementId = `likesCountPost${id}`;
-        dislikesElementId = `dislikesCountPost${id}`;
-    } else if (type === 'comment') {
-        body.comment_id = id;
-        likesElementId = `likesCountComment${id}`;
-        dislikesElementId = `dislikesCountComment${id}`;
-    } else {
-        console.error('Invalid type specified for getInteractions');
-        return;
-    }
-
-    fetch('/getInteractions', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(body),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (type === 'post') {
-            // For posts, display with "Likes: X"
-            document.getElementById(likesElementId).innerText = `Likes: ${data.likes}`;
-            document.getElementById(dislikesElementId).innerText = `Dislikes: ${data.dislikes}`;
-        } else if (type === 'comment') {
-            // For comments, display only the number
-            document.getElementById(likesElementId).innerText = data.likes;
-            document.getElementById(dislikesElementId).innerText = data.dislikes;
-        }
-    })
-    .catch(error => console.error('Error fetching likes/dislikes:', error));
-}
-
-
-
-
-
-function toggleDropdown(id) {
-    var dropdown = document.getElementById(id);
-    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; // Toggle visibility
-}
-
-function likeDislikePost(postId, isLike) {
-    fetch('/likeDislikePost', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            post_id: postId,
-            is_like: isLike
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Post interaction updated successfully');
-            location.reload(); // Refresh the page
-        } else {
-            location.reload(); // Refresh the page if desired
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        location.reload(); // Refresh the page if desired
-    });
-}
-
-function likeDislikeComment(postId, commentId, isLike) {
-    fetch('/likeDislikeComment', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            post_id: postId,
-            comment_id: commentId,
-            is_like: isLike,
-        }),
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.success) {
-            alert('Comment interaction updated successfully');
-            location.reload(); // Refresh the page if desired
-        } else {
-            location.reload(); // Refresh the page if desired
-        }
-    })
-    .catch(error => {
-        console.error('Error:', error);
-        alert('An error occurred while updating comment interaction.'); // Error handling
-    });
-}
