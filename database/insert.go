@@ -2,14 +2,15 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
 	"time"
 
 	_ "modernc.org/sqlite"
 )
 
-func InsertUser(db *sql.DB, username, email, password string) (int64, error) {
-	query := `INSERT INTO users (username, email, password) VALUES (?, ?, ?)`
-	result, err := db.Exec(query, username, email, password)
+func InsertUser(db *sql.DB, username, email, fname, lname, age, gender, password string) (int64, error) {
+	query := `INSERT INTO users (username, firstname, lastname, age, gender, email, password) VALUES (?, ?, ?, ?, ?, ?, ?)`
+	result, err := db.Exec(query, username, fname, lname, age, gender, email, password)
 	if err != nil {
 		return 0, err
 	}
@@ -54,9 +55,9 @@ func InsertPost(db *sql.DB, user_id int, title, content string) (int64, time.Tim
 	return id, createdAt, err
 }
 func InsertPostCategory(db *sql.DB, postID int, categoryID int) error {
-    query := `INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)`
-    _, err := db.Exec(query, postID, categoryID)
-    return err
+	query := `INSERT INTO post_categories (post_id, category_id) VALUES (?, ?)`
+	_, err := db.Exec(query, postID, categoryID)
+	return err
 }
 
 func InsertComment(db *sql.DB, postID, userID int, content string) (int64, time.Time, error) {
@@ -94,5 +95,8 @@ func InsertLike(db *sql.DB, userID, postID, commentID int, isLike bool) error {
 func InsertSession(db *sql.DB, userID int, token string, expiresAt time.Time) error {
 	query := `INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)`
 	_, err := db.Exec(query, userID, token, expiresAt)
+	if err != nil {
+		fmt.Println("❌ SQL Error inserting session:", err)
+	}
 	return err
 }

@@ -2,8 +2,9 @@ package database
 
 import (
 	"database/sql"
-	_ "modernc.org/sqlite"
 	"time"
+
+	_ "modernc.org/sqlite"
 )
 
 func GetAllUserNames(db *sql.DB) ([]string, error) {
@@ -101,10 +102,9 @@ func GetActiveSessionbyUserID(db *sql.DB, userID int) (int, error) {
 	err := db.QueryRow(query, userID, currentTime).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// No rows found or session is expired
-			return -1, nil
+			return -1, nil // No active session
 		}
 		return -1, err
 	}
-	return id, nil
+	return id, nil // Active session exists
 }

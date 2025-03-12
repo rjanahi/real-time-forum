@@ -2,6 +2,8 @@ package database
 
 import (
 	"database/sql"
+	"fmt"
+
 	_ "modernc.org/sqlite"
 )
 
@@ -41,8 +43,12 @@ func DeleteLike(db *sql.DB, likeID int) error {
 	return err
 }
 
-func DeleteSession(db *sql.DB, ID int) error {
+func DeleteSession(db *sql.DB, sessionID int) error {
+	fmt.Println("✅ Deleting session with ID:", sessionID)
 	query := `DELETE FROM sessions WHERE id = ?`
-	_, err := db.Exec(query, ID)
+	_, err := db.Exec(query, sessionID)
+	if err != nil {
+		fmt.Println("❌ Error deleting session:", err)
+	}
 	return err
 }

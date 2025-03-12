@@ -2,10 +2,15 @@ package web
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	u "forum/apis/user"
+	"forum/database"
 	"log"
 	"net/http"
+	"strconv"
 	"text/template"
+	"time"
 )
 
 type Page struct {
@@ -25,8 +30,53 @@ func ConnectWeb(db *sql.DB) {
 	http.Handle("/style/", http.StripPrefix("/style/", http.FileServer(http.Dir("style/"))))
 	http.Handle("/js/", http.StripPrefix("/js/", http.FileServer(http.Dir("js/"))))
 
-	// Define routes
-	http.HandleFunc("/", mainPageHandler)
+	// Define a handler for all paths (main page and dynamic routes)
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mainPageHandler(w, r, db)
+	})
+
+	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
+		Register(db, w, r)
+	})
+	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		u.Login(db, w, r) // Call the Login function from Register.go
+	})
+	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
+		userID, loggedIn := u.ValidateSession(db, r)
+		response := map[string]interface{}{
+			"loggedIn": loggedIn,
+			"userID":   userID,
+		}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	})
+
+	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
+		// Clear the session token cookie
+		cookie := &http.Cookie{
+			Name:     "session_token",
+			Value:    "",
+			Expires:  time.Now().Add(-1 * time.Hour), // Expire immediately
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, cookie)
+
+		// Invalidate session in the database (optional but recommended)
+		cookie, err := r.Cookie("session_token")
+		cookieINT, _ := strconv.Atoi(cookie.Value)
+		if err == nil {
+			// Call a function to delete the session from the database
+			err := database.DeleteSession(db, cookieINT)
+			if err != nil {
+				fmt.Println("❌ Error deleting session:", err)
+			}
+		}
+
+		response := map[string]string{"message": "Logged out successfully"}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
+	})
 
 	fmt.Println("Listening on: http://localhost:8888/")
 	if err := http.ListenAndServe("0.0.0.0:8888", nil); err != nil {
@@ -34,28 +84,76 @@ func ConnectWeb(db *sql.DB) {
 	}
 }
 
-func mainPageHandler(w http.ResponseWriter, r *http.Request) {
-	path := r.URL.Path
-	if path != "/"  {
-		
-		return
-	}
-
+func mainPageHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
+	// Serve the main page for all paths
 	tmpl, err := template.ParseFiles("templates/mainPage.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
-        http.Error(w, "Internal Server Error 1", http.StatusInternalServerError)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
+
+	// Pass data to the template if needed
 	data := Page{
 		Title: "Hello",
 	}
 
 	err = tmpl.Execute(w, data)
 	if err != nil {
-		log.Printf("Error parsing template: %v", err)
-        http.Error(w, "Internal Server Error 2", http.StatusInternalServerError)
+		log.Printf("Error executing template: %v", err)
+		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		return
+	}
+}
+
+// Add signup handler separately in the user package
+func Register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
+	// Handle the signup logic here
+	u.Register(db, w, r) // Call your existing user registration logic
+}
+
+func clearAllTables(db *sql.DB) error {
+	tables, err := getTableNames(db)
+	if err != nil {
+		return err
+	}
+
+	for _, table := range tables {
+		query := `DELETE FROM ` + table
+		_, err := db.Exec(query)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func getTableNames(db *sql.DB) ([]string, error) {
+	query := `SELECT name FROM sqlite_master WHERE type='table'`
+	rows, err := db.Query(query)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var tables []string
+	for rows.Next() {
+		var tableName string
+		if err := rows.Scan(&tableName); err != nil {
+			return nil, err
+		}
+		tables = append(tables, tableName)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }

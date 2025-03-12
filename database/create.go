@@ -44,7 +44,7 @@ func createUser(db *sql.DB) error {
     username TEXT NOT NULL UNIQUE,
     firstname TEXT NOT NULL,
     lastname TEXT NOT NULL,
-    age INTEGER NOT NULL,
+    age TEXT NOT NULL,
     gender TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
     password TEXT NOT NULL,
@@ -96,7 +96,7 @@ func createComments(db *sql.DB) error {
         content TEXT NOT NULL,
         created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
         FOREIGN KEY (post_id) REFERENCES posts(id),
-        FOREIGN KEY (user_id) REFERENCES users(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
     );`
 	_, err := db.Exec(query)
 	return err
