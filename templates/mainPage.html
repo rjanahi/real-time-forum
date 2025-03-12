@@ -102,18 +102,17 @@
         <br>
 
    
-        {{range .PostsWithComments}} <!-- Iterate over PostsWithComments -->
         <div class="post-post">
             <div class="comment-post">
-                <h2>{{.Post.Title}}</h2>
-                <p>{{.Post.Content}}</p>
-                <small>Posted by User: {{.Post.UserName}} on {{.Post.CreatedAt.Format "January 2, 2006 15:04:00"}}</small>
+                <h2></h2>
+                <p></p>
+                <small>Posted by User:</small>
                 <br>
 
                 <!-- Display likes and dislikes count -->
 
                 <p>Comments:</p>
-                {{range .Comments}}
+
                 <div class="comment-item-post">
                     <small>{{.Username}}: {{.Content}}</small>
                     <div class="space-post-post"></div>
@@ -121,16 +120,16 @@
                     <small>
                         <span id="likesCountComment{{.ID}}">0</span> &nbsp;
                     </small>
-                        <span class="material-icons-post" onclick="likeDislikeComment({{.PostID}}, {{.ID}}, true); this.style.color = 'green'"> thumb_up </span>
+                        <span class="material-icons-post"> thumb_up </span>
                     <small>
                         &nbsp; <span id="dislikesCountComment{{.ID}}">0</span> &nbsp;
                     </small>
-                    <span class="material-icons-post" onclick="likeDislikeComment({{.PostID}}, {{.ID}}, false); this.style.color = 'red'"> thumb_down </span>
+                    <span class="material-icons-post"> thumb_down </span>
              
                 </div>
-                {{else}}
+
                     <small>No comments yet.</small><br>
-                {{end}}
+            
                 <br>
                 <br>
   
@@ -140,8 +139,8 @@
                     <button class="Submit" type="submit">Post it</button>
                 </form>
                 <br>
-                <span class="material-icons-post" onclick="likeDislikePost({{.Post.ID}}, true); this.style.color = 'green'"> thumb_up </span>
-                <span class="material-icons-post" onclick="likeDislikePost({{.Post.ID}}, false); this.style.color = 'red'"> thumb_down </span>
+                <span class="material-icons-post" > thumb_up </span>
+                <span class="material-icons-post" > thumb_down </span>
 
 
                 <small> <span id="likesCountPost{{.Post.ID}}">Likes: 0</span> <span id="dislikesCountPost{{.Post.ID}}">Dislikes: 0</span></small>
