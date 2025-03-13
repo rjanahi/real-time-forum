@@ -90,11 +90,11 @@
         <button class="return-button" onclick="window.location.href='http://localhost:8888/';">Return</button>
     </section>
 
+
     <!-- Post Page -->
     <section id="postPageSection" hidden>
         <div class="sidebar-post left-sidebar">
             <br>
-
             <h2>Filter</h2>
             <br>
             <a href="javascript:void(0);" onclick="toggleDropdown('categoryOptions')">Categories</a>
@@ -104,86 +104,33 @@
                 <a href="?category=Food">Food</a>
                 <a href="?category=Nature">Nature</a>
                 <a href="?category=Liked">Liked</a>
-
             </div>
             <a href="/">Main</a>
-        
             <div class="bottom-post">
-                <button id="postsButton" >Posts</button>
+                <button id="postsButton">Posts</button>
                 <a href="?category=UserPosts">My Posts</a>
                 <button id="logoutButton" class="button-main" style="display: none;">Logout</button>
-        
             </div>
         </div>
 
         <div class="container-post">
             <h1>Posts</h1>
-
             <button id="createPostButton" class="button-main">Create Post</button>
             <br>
 
-    
-            <div class="post-post">
-                <div class="comment-post">
-                    <h2></h2>
-                    <p></p>
-                    <small>Posted by User:</small>
-                    <br>
-
-                    <!-- Display likes and dislikes count -->
-
-                    <p>Comments:</p>
-
-                    <div class="comment-item-post">
-                        <small></small>
-                        <div class="space-post-post"></div>
-
-                        <small>
-                            <span id="likesCountComment">0</span> &nbsp;
-                        </small>
-                            <span class="material-icons-post"> thumb_up </span>
-                        <small>
-                            &nbsp; <span id="dislikesCountComment">0</span> &nbsp;
-                        </small>
-                        <span class="material-icons-post"> thumb_down </span>
-                
-                    </div>
-
-                        <small>No comments yet.</small><br>
-                
-                    <br>
-                    <br>
-    
-                    <form action="/comment" method="post">
-                        <input type="hidden" name="postID">
-                        <textarea name="content" maxlength="100" required></textarea>
-                        <button class="Submit" type="submit">Post it</button>
-                    </form>
-                    <br>
-                    <span class="material-icons-post" > thumb_up </span>
-                    <span class="material-icons-post" > thumb_down </span>
-
-
-                    <small> <span id="likesCountPost">Likes: 0</span> <span id="dislikesCountPost">Dislikes: 0</span></small>
-
-                </div>
-            </div>
-
-            <p>No posts available.</p>
-
-            <script>
-                
-            </script>
+            <!-- This is where posts will be dynamically inserted -->
+            <div id="postsContainer"></div>
         </div>
     </section>
 
+
     <!-- Create Post  -->
     <section id="createPostSection" hidden>
-        
+        <button class="return-button" id="return-to-post" >Return</button>
         <div class="container-create">
             <h1>Create a New Post</h1>
             
-            <form action="" method="POST">
+            <form id="createPostForm" action="" method="POST">
                 <label for="title">Title:</label>
                 <input type="text" id="title" name="title" required>
                 

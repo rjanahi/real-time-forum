@@ -4,6 +4,8 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+
+	p "forum/apis/post"
 	u "forum/apis/user"
 	"forum/database"
 	"log"
@@ -36,11 +38,28 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		Register(db, w, r)
+		u.Register(db, w, r)
 	})
+
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
 		u.Login(db, w, r) // Call the Login function from Register.go
 	})
+
+	http.HandleFunc("/get-posts", func(w http.ResponseWriter, r *http.Request) {
+		p.GetPosts(db, w, r)
+	})
+
+	http.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
+		mainPageHandler(w, r, db) // ✅ This serves the Create Post page
+	})
+
+	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
+		
+			p.CreatePost(db, w, r) // ✅ This is the API to save posts
+		
+
+	})
+
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
 		userID, loggedIn := u.ValidateSession(db, r)
 		response := map[string]interface{}{
@@ -104,17 +123,6 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
 		return
 	}
-}
-
-// Add signup handler separately in the user package
-func Register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
-	// Handle the signup logic here
-	u.Register(db, w, r) // Call your existing user registration logic
 }
 
 func clearAllTables(db *sql.DB) error {

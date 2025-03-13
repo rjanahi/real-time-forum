@@ -108,3 +108,27 @@ func GetActiveSessionbyUserID(db *sql.DB, userID int) (int, error) {
 	}
 	return id, nil // Active session exists
 }
+
+func GetCategoriesByPostID(db *sql.DB, postID int) ([]string, error) {
+	query := `SELECT categories.name FROM categories 
+              JOIN post_categories ON categories.id = post_categories.category_id 
+              WHERE post_categories.post_id = ?`
+
+	rows, err := db.Query(query, postID)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	var categories []string
+	for rows.Next() {
+		var categoryName string
+		if err := rows.Scan(&categoryName); err != nil {
+			return nil, err
+		}
+		categories = append(categories, categoryName)
+	}
+
+	return categories, nil
+}
+

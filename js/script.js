@@ -1,5 +1,3 @@
-
-document.addEventListener('DOMContentLoaded', () => {
     // Get references to sections
     const mainSection = document.getElementById('mainPage');
     const signUpSection = document.getElementById('signUpSection');
@@ -15,6 +13,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const postsButton = document.getElementById('postsButton');
     const createPostButton = document.getElementById('createPostButton');
     const aboutUsButton = document.getElementById('aboutUsButton');
+    const returnToPost = document.getElementById("return-to-post");
 
     // Function to show a section and hide others
     function showSection(sectionToShow, urlSuffix) {
@@ -30,12 +29,22 @@ document.addEventListener('DOMContentLoaded', () => {
         history.pushState(null, '', urlSuffix);
     }
 
+document.addEventListener('DOMContentLoaded', () => {
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
     if (postsButton) postsButton.addEventListener('click', () => showSection(postPageSection, '/posts'));
-    if (createPostButton) createPostButton.addEventListener('click', () => showSection(createPostSection, '/create-post'));
+    if (createPostButton) {
+        console.log("✅ Create Post Button Found");
+        createPostButton.addEventListener('click', () => {
+            console.log("🟢 Create Post Button Clicked");
+            showSection(createPostSection, '/create-post');
+        });
+    } else {
+        console.log("❌ Create Post Button NOT Found in the DOM");
+    }
     if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
+    if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
 
     // ✅ Run session check on page load
     checkSession();
@@ -178,6 +187,131 @@ function checkSession() {
         })
         .catch(error => console.error("Session check failed:", error));
 }
+
+// ✅ Post form submission
+document.addEventListener('DOMContentLoaded', () => {
+    const createPostForm = document.getElementById('createPostForm');
+    
+    if (createPostForm) {
+        createPostForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+
+            // Get selected categories (checkboxes)
+            const selectedCategories = [];
+            document.querySelectorAll('input[name="category"]:checked').forEach((checkbox) => {
+                selectedCategories.push(checkbox.value);
+            });
+
+            const postData = {
+                title: document.getElementById('title').value,
+                content: document.getElementById('content').value,
+                categories: selectedCategories // Send array of selected categories
+            };
+
+            fetch('/create-post', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(postData),
+                credentials: 'include' // Ensures session cookies are sent
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert("Post created successfully!");
+                        createPostForm.reset();
+                    } else {
+                        alert("Error: " + data.message);
+                    }
+                })
+                .catch(error => alert("An error occurred: " + error.message));
+        });
+    }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+    const postContainer = document.querySelector('.container-post');
+
+    function loadPosts() {
+        fetch('/get-posts', {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(posts => {
+            const postContainer = document.querySelector('.container-post');
+            postContainer.innerHTML = `
+                <h1>Posts</h1>
+                <button id="createPostButton" class="button-main">Create Post</button>
+                <br>
+            `;
+
+            // ✅ Re-add event listener after recreating the button
+        document.getElementById('createPostButton').addEventListener('click', () => {
+            showSection(document.getElementById('createPostSection'), '/create-post');
+        });
+        
+
+        if (posts.length === 0) {
+            postContainer.innerHTML += "<p>No posts available.</p>";
+            return;
+        }
+
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.classList.add('post-post');
+
+                postElement.innerHTML = `
+                    <div class="comment-post">
+                        <h2>${post.title}</h2>
+                        <p>${post.content}</p>
+                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+                        <br><br>
+
+                        <p>Comments:</p>
+                        <div class="comment-item-post">
+                            <small>No comments yet.</small>
+                            <div class="space-post-post"></div>
+                        </div>
+
+                        <form action="/comment" method="post">
+                            <input type="hidden" name="postID" value="${post.id}">
+                            <textarea name="content" maxlength="100" required></textarea>
+                            <button class="Submit" type="submit">Post it</button>
+                        </form>
+                        <br>
+
+                        <span class="material-icons-post"> thumb_up </span>
+                        <span class="material-icons-post"> thumb_down </span>
+
+                        <small>
+                            <span id="likesCountPost">Likes: 0</span> 
+                            <span id="dislikesCountPost">Dislikes: 0</span>
+                        </small>
+                    </div>
+                `;
+
+                postContainer.appendChild(postElement);
+            });
+        })
+        .catch(error => {
+            console.error("❌ Error loading posts:", error);
+            postContainer.innerHTML += "<p>Failed to load posts.</p>";
+        });
+    }
+
+    // Load posts when navigating to the posts page
+    document.getElementById('postsButton').addEventListener('click', () => {
+        loadPosts();
+    });
+
+    // Load posts when the page initially loads (if needed)
+    if (window.location.pathname === '/posts') {
+        loadPosts();
+    }
+});
+
+
 
 // ✅ Run check on page load
 document.addEventListener('DOMContentLoaded', checkSession);

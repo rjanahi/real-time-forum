@@ -100,3 +100,21 @@ func InsertSession(db *sql.DB, userID int, token string, expiresAt time.Time) er
 	}
 	return err
 }
+
+func GetCategoryID(db *sql.DB, categoryName string) (int, error) {
+	query := `SELECT id FROM categories WHERE name = ?`
+	var categoryID int
+	err := db.QueryRow(query, categoryName).Scan(&categoryID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			// If category doesn't exist, create it
+			categoryID, err = InsertCategory(db, categoryName)
+			if err != nil {
+				return -1, err
+			}
+		} else {
+			return -1, err
+		}
+	}
+	return categoryID, nil
+}
