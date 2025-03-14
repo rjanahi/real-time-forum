@@ -274,7 +274,7 @@ function loadCommentsForPost(postId) {
                     commentsSection.innerHTML += `
                         <div class="comment">
                             <p><strong>${comment.username}:</strong> ${comment.content}</p>
-                            <small>Posted on ${formattedDate}</small>
+                            <small>Commented on ${formattedDate}</small>
                         </div>
                     `;
                 });
@@ -300,7 +300,7 @@ function loadCommentsForPost(postId) {
                 const postID = document.querySelector("#postID").value;
         
                 if (!commentText) {
-                    alert("Comment cannot be empty.");
+                    // alert("Comment cannot be empty.");
                     return;
                 }
         
@@ -323,7 +323,7 @@ function loadCommentsForPost(postId) {
                 })
                 .then(data => {
                     console.log("✅ Server Response:", data);
-                    alert(data.success ? "Comment posted successfully!" : "Error: " + data.message);
+                    // alert(data.success ? "Comment posted successfully!" : "Error: " + data.message);
 
                     // ✅ Reload comments without redirecting away
                     if (data.success) loadCommentsForPost(postID);
