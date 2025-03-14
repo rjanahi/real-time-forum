@@ -49,6 +49,23 @@ func ConnectWeb(db *sql.DB) {
 		p.GetPosts(db, w, r)
 	})
 
+	http.HandleFunc("/get-myPosts", func(w http.ResponseWriter, r *http.Request) {
+		userID, loggedIn := u.ValidateSession(db, r)
+		if !loggedIn {
+			http.Error(w, "Unauthorized. Please log in.", http.StatusUnauthorized)
+			return
+		}
+
+		posts, err := database.GetPostsByUserID(db, userID)
+		if err != nil {
+			http.Error(w, "Failed to retrieve posts", http.StatusInternalServerError)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts)
+	})
+
 	http.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
 		mainPageHandler(w, r, db) // ✅ This serves the Create Post page
 	})
