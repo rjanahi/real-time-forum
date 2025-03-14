@@ -242,12 +242,14 @@ function loadCommentsForPost(postId) {
             const comments = parsedResponse; // ✅ Safe to use now
             commentsSection.innerHTML = `
         <button id="return-to-posts" class="return-button">Return</button>
+        <div class="container-about">
             <h2>Comments</h2><br>
             <form id="commentForm">
                 <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br><br>
                 <input type="hidden" id="postID" value="${postId}">
                <br><br> <button id="sendCommentButton" class="button-main" type="submit">Post Comment</button>
-            </form>`;
+            </form>
+            </div>`;
 
            
             if (comments.length === 0) {
