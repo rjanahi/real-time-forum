@@ -4,9 +4,9 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	database "forum/database"
 	"net/http"
 	"time"
-	database "forum/database"
 )
 
 func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
@@ -42,7 +42,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to process posts", http.StatusInternalServerError)
 			return
 		}
-		
+
 		// Fetch categories for this post
 		categories, err := database.GetCategoriesByPostID(db, postID)
 		if err != nil {
@@ -62,6 +62,19 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		}
 		posts = append(posts, post)
 	}
+
+	// Return posts as JSON
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(posts)
+}
+
+func GetPost(db *sql.DB, w http.ResponseWriter, r *http.Request,postID int) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	posts,_ := database.GetPostByPostID(db,postID)
 
 	// Return posts as JSON
 	w.Header().Set("Content-Type", "application/json")

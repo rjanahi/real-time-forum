@@ -10,13 +10,6 @@ body {
     justify-content: center; 
 }
 
-small {
-    color: #888;
-    font-size: 0.875rem; 
-    display: block; 
-    margin-top: 0.5rem; 
-}
-
  .mainPage, .postPage ,.signUp ,.logIn ,.createPost, .aboutUs,.comments{
     margin: 0; /* Remove default margin */
     padding: 0; /* Remove default padding */
@@ -29,26 +22,8 @@ small {
     display: none;
 }
 
-
-/*Main css*/
-.sidebar-main {
-    width: 150px;
-    background-color: #1f1f1f;
-    color: white;
-    position: fixed; /* Keep sidebar fixed */
-    height: 100vh; /* Full height */
-    padding-top: 20px; /* Space at the top */
-    z-index: 2;
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-}
-
 .left-sidebar {
     left: 0; /* Align left sidebar to the left */
-}
-
-.right-sidebar{
-    right: 0; /* Align right sidebar to the right */
 }
 
 .container-main {
@@ -73,8 +48,7 @@ small {
     display: flex;
     flex-direction: column; /* Stack buttons vertically */
     gap: 10px; /* Space between buttons */
-    width: 100%; /* Full width for buttons */
-    max-width: 300px; /* Max width for buttons container */
+    max-width: 100px; /* Max width for buttons container */
 }
 
 .button-main {
@@ -92,27 +66,17 @@ small {
     font-size: 1em; /* Match font size */
 }
 
-.button:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
-.return-button-main {
-    position: absolute; /* Position it relative to the body */
-    top: 20px; /* Distance from the top */
-    right: 20px; /* Distance from the right */
-    background-color: #000000; /* White background */
-    color: #ffffff; /* Black text */
-    border: 1px solid #000000; /* Light gray border */
-    padding: 8px 12px; /* Padding for the button */
-    border-radius: 5px; /* Rounded corners */
+.button-side {
+    background-color: #1f1f1f;
+    color: #ffffff; /* White text */
+    padding: 10px; /* Adjust padding for height */
+    margin-left: 10px;
+    text-align: center; /* Center text within button */
+    text-decoration: none; /* Remove underline */
     cursor: pointer;
-    transition: background-color 0.3s;
+    border: none; /* Remove border */
+    font-size: 1em; /* Match font size */
 }
-
-.return-button-main:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
 
 /*Post CSS*/
 .sidebar-post {
@@ -131,21 +95,6 @@ small {
     left: 0; /* Align left sidebar to the left */
 }
 
-.right-sidebar {
-    right: 0; /* Align right sidebar to the right */
-}
-
-.sidebar-post a {
-    display: block;
-    padding: 10px;
-    color: white;
-    text-decoration: none;
-}
-
-.sidebar-post a:hover {
-    background-color: #000000;
-}
-
 .sidebar-post h2{
     text-align: center;
 }
@@ -155,83 +104,20 @@ small {
     padding-left: 20px; /* Indent for sub-options */
 }
 
-.Submit-post{
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    padding: 10px; /* Adjust padding for height */
-    text-align: center; /* Center text within button */
-    text-decoration: none; /* Remove underline */
-    cursor: pointer;
-    transition: background-color 0.3s;
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    float: right;
-}
-.Submit-post:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
 textarea {
-    width: 260px; /* Full width */
-    height: 30px; /* Height for the textarea */
-    font-size: 1em; /* Font size */
-    border: 2px solid #ced4da; /* Light border */
-    border-radius: 5px; /* Rounded corners */
-    background-color: #f8f9fa; /* Light gray background */
-    color: #495057; /* Darker text color */
-    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1); /* Inner shadow for depth */
-    resize: none; /* Prevent resizing */
-    transition: border-color 0.3s, box-shadow 0.3s; /* Smooth transition */
+    font-size: 1rem;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 1rem;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 textarea:focus {
     border-color: #000000; /* Blue border on focus */
     box-shadow: 0 0 5px rgba(0, 0, 0, 0.5); /* Glow effect on focus */
     outline: none; /* Remove default outline */
-}
-
-
-.space-post{
-padding: 5px;
-}
-
-.comment-item-post {
-    display: flex; /* Use flexbox for alignment */
-    align-items: center; /* Center items vertically */
-    margin-bottom: 5px; /* Space between comments */
-}
-
-.LikeDis-post {
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    padding: 5px; /* Adjust padding for height */
-    text-align: center; /* Center text within button */
-    text-decoration: none; /* Remove underline */
-    cursor: pointer;
-    transition: background-color 0.3s;
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-   
-    margin-left: 10px; /* Space between comment text and like button */
-}
-.LikeDis-post:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
-
-.LikeDisComm-post{
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    text-align: center; /* Center text within button */
-    text-decoration: none; /* Remove underline */
-    cursor: pointer;
-    transition: background-color 0.3s;
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    margin-right: 5px;
-}
-.LikeDisComm-post:hover {
-    background-color: #555555; /* Dark gray on hover */
 }
 
 /* Main container */
@@ -248,92 +134,19 @@ padding: 5px;
     flex-direction: column; /* Stack items vertically */
     align-items: center; /* Center items horizontally */
 }
-.comment-post {
-    background-color: #ffffff; /* White background for comments */
-    border-radius: 5px;
-    padding: 15px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.post-post {
-    display: block; /* Ensure each post is a block element */
-    width: 100%; /* Make post take the full width of the container */
-    margin-bottom: 20px; /* Space between posts */
-}
-
-.button-post {
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    padding: 10px; /* Adjust padding for height */
-    text-align: center; /* Center text within button */
-    text-decoration: none; /* Remove underline */
-    cursor: pointer;
-    transition: background-color 0.3s;
-    width: 100%; /* Make button full width */
-    border: none; /* Remove border */
-    border-radius: 5px; /* Rounded corners */
-    max-width: 300px; /* Max width for the button */
-}
-
-.button-post:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
-.material-icons-post {
-    cursor: pointer;
-    color: gray;
-}
-
-/* Create CSS*/
-
-
-.sidebar-create {
-    width: 150px;
-    background-color: #1f1f1f;
-    color: white;
-    position: fixed;
-    height: 100%;
-    left: -110px; /* Initially hidden */
-    transition: left 0.3s ease;
-    z-index: 2;
-}
-
-.sidebar-create:hover {
-    left: 0; /* Slide in on hover */
-}
-
-.sidebar-create h2 {
-    text-align: center;
-    margin: 0;
-    padding: 10px 0;
-}
-
-.sidebar-create a {
-    display: block;
-    padding: 10px;
-    color: white;
-    text-decoration: none;
-}
-
-.sidebar-create a:hover {
-    background-color: #000000;
-}
-
-.dropdown-create {
-    display: none; /* Initially hidden */
-    padding-left: 20px; /* Indent for sub-options */
-}
 
 /* Container */
 .container-create {
-    background: #f4f4f4; /* Light gray background */
+    background: #f4f4f4;
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     padding: 20px;
-    width: 100%;
-    max-width: 600px;
     box-sizing: border-box;
+    display: flex;
+    align-items: center; /* Center items */
+    text-align: center; /* Center text */
+    width: calc(100% - 300px); /* Full width minus both sidebars */
+    margin: 0 auto; /* Center horizontally */
 }
 
 /* Heading */
@@ -354,8 +167,6 @@ form {
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
     max-width: 600px;
     margin: auto;
-    display: flex;
-    flex-wrap: wrap;
 }
 
 /* Label Styles */
@@ -403,33 +214,11 @@ input[type="submit"]:hover {
     background-color: #218838;
 }
 
-label {
-    margin-bottom: 5px;
-    display: block;
-}
-
 .feedback-message {
     color: red;
     margin-bottom: 1rem;
     text-align: center;
     width: 100%; /* Full width for feedback message */
-}
-
-.return-button-create {
-    position: absolute; /* Position it relative to the body */
-    top: 20px; /* Distance from the top */
-    right: 20px; /* Distance from the right */
-    background-color: #000000; /* White background */
-    color: #ffffff; /* Black text */
-    border: 1px solid #000000; /* Light gray border */
-    padding: 8px 12px; /* Padding for the button */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
-.return-button-create:hover {
-    background-color: #555555; /* Dark gray on hover */
 }
 
 .button-create{
@@ -452,53 +241,7 @@ label {
     background-color: #555555; /* Dark gray on hover */
 }
 
-/* Login/Sign-up CSS */
-.sign-up-button {
-    background-color: #000000; /* Black background */
-    color: white;
-    border: none;
-    border-radius: 4px;
-    padding: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
-
-/* Sign Up Button Hover State */
-.sign-up-button:hover {
-    background-color: #555; /* Dark gray on hover */
-}
-
-.return-button {
-    position: absolute; /* Position it relative to the body */
-    top: 20px; /* Distance from the top */
-    right: 20px; /* Distance from the right */
-    background-color: #000000; /* White background */
-    color: #ffffff; /* Black text */
-    border: 1px solid #000000; /* Light gray border */
-    padding: 8px 12px; /* Padding for the button */
-    border-radius: 5px; /* Rounded corners */
-    cursor: pointer;
-    transition: background-color 0.3s;
-}
-
 .return-button:hover {
-    background-color: #555555; /* Dark gray on hover */
-}
-
-/* About us CSS*/
-.return-button-about {
-    margin: 20px;
-    padding: 10px 15px;
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s;
-}
-
-.return-button-about:hover {
     background-color: #555555; /* Dark gray on hover */
 }
 
@@ -517,99 +260,27 @@ label {
     width: 100%;
 }
 
-
-/*Messages CSS*/
-
-#chatBox {
-    position: fixed; /* Fix position to the viewport */
-    bottom: 20px; /* Distance from the bottom */
-    right: 20%; /* Distance from the right */
-    width: 300px; /* Set a specific width */
-    max-width: 100%; /* Ensure it doesn't overflow the viewport */
-    background-color: #f4f4f4; /* Light gray background */
-    border-radius: 8px; /* Rounded corners */
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-    display: flex;
-    flex-direction: column; /* Stack children vertically */
-    height: 400px; /* Fixed height for the chat box */
+.comment-post {
+    background-color: #ffffff; /* White background for comments */
+    border-radius: 5px;
+    padding: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
 }
 
-/* Messages Container */
-#messages {
-    flex: 1; /* Take up remaining space */
-    padding: 10px; /* Padding for messages */
-    overflow-y: auto; /* Scrollable area */
-    background-color: #ffffff; /* White background for messages */
-    border-radius: 8px; /* Rounded corners */
-}
-
-/* Individual Message Styles */
-#messages div {
-    margin-bottom: 10px; /* Space between messages */
-    padding: 10px; /* Padding for each message */
-    border-radius: 5px; /* Round corners */
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); /* Subtle shadow */
-}
-
-#messages div:nth-child(odd) {
-    background-color: #e9e9e9; /* Light gray for alternate messages */
-}
-
-#messages div:nth-child(even) {
-    background-color: #d1ffd1; /* Light green for alternate messages */
-}
-
-/* Message Input Area */
-#messageInput {
-    display: flex; /* Flexbox for input and button */
-    padding: 10px; /* Padding around input area */
-    background-color: #ffffff; /* White background */
-    border-top: 1px solid #ccc; /* Top border */
-}
-
-#messageInput input {
-    flex: 1; /* Take up remaining space */
-    padding: 10px; /* Padding inside input */
+.return-button {
+    position: absolute; /* Position it relative to the body */
+    top: 20px; /* Distance from the top */
+    right: 20px; /* Distance from the right */
+    background-color: #000000; /* White background */
+    color: #ffffff; /* Black text */
+    border: 1px solid #000000; /* Light gray border */
+    padding: 8px 12px; /* Padding for the button */
     border-radius: 5px; /* Rounded corners */
-    border: 1px solid #ccc; /* Light gray border */
-    font-size: 1rem; /* Font size */
-    transition: border-color 0.3s; /* Transition for border color */
+    cursor: pointer;
+    transition: background-color 0.3s;
 }
 
-#messageInput input:focus {
-    border-color: #000000; /* Dark border on focus */
-    outline: none; /* Remove outline */
-}
-
-#send {
-    background-color: #000000; /* Black button */
-    color: #ffffff; /* White text */
-    border: none; /* No border */
-    border-radius: 5px; /* Rounded corners */
-    padding: 10px 15px; /* Padding for button */
-    margin-left: 10px; /* Space between input and button */
-    cursor: pointer; /* Pointer cursor */
-    transition: background-color 0.3s; /* Transition for hover */
-}
-
-#send:hover {
+.return-button:hover {
     background-color: #555555; /* Dark gray on hover */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-    #chatBox {
-        width: 100%; /* Full width on smaller screens */
-        max-width: 300px; /* Ensure it doesn't exceed */
-    }
-
-    #messageInput {
-        flex-direction: column; /* Stack input and button */
-    }
-
-    #send {
-        margin-left: 0; /* Reset margin */
-        margin-top: 5px; /* Space above button */
-        width: 100%; /* Full width button */
-    }
 }

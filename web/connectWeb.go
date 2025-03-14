@@ -54,7 +54,7 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
-			p.CreatePost(db, w, r) // ✅ This is the API to save posts
+		p.CreatePost(db, w, r) // ✅ This is the API to save posts
 	})
 
 	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
@@ -64,9 +64,32 @@ func ConnectWeb(db *sql.DB) {
 			http.Error(w, "Invalid post ID", http.StatusBadRequest)
 			return
 		}
-		p.GetComments(db, w, r)
+
+		// Fetch post details
+		post, err := database.GetPostByPostID(db, postID)
+		if err != nil || len(post) == 0 {
+			http.Error(w, "Post not found", http.StatusNotFound)
+			return
+		}
+
+		// Fetch comments
+		comments, err := p.GetCommentsByPostID(db, postID)
+		if err != nil {
+			http.Error(w, "Error fetching comments", http.StatusInternalServerError)
+			return
+		}
+
+		// Combine post and comments into a single response
+		response := map[string]interface{}{
+			"post":     post[0], // Assuming GetPostByPostID returns a slice
+			"comments": comments,
+		}
+
+		// Return combined response as JSON
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(response)
 	})
-	
+
 	http.HandleFunc("/create-comment", func(w http.ResponseWriter, r *http.Request) {
 		p.CreateComment(db, w, r) // Ensure this handles comment creation
 	})

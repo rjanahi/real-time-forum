@@ -12,7 +12,7 @@
     <!-- Main Page -->
     <section id="mainPage">
         <div class="container-main">
-            <div class="right-side-main">
+            <div>
                 <div class="logo-main">
                     <img src="../style/logo.png" alt="Logo" style="max-width: 200px;">
                 </div>
@@ -99,27 +99,29 @@
             <br>
             <a href="javascript:void(0);" onclick="toggleDropdown('categoryOptions')">Categories</a>
             <div class="dropdown-post" id="categoryOptions">
-                <a href="?category=Travel">Travel</a>
-                <a href="?category=Sport">Sport</a>
-                <a href="?category=Food">Food</a>
-                <a href="?category=Nature">Nature</a>
+                <a href="?category=Travel">Travel</a><br>
+                <a href="?category=Sport">Sport</a><br>
+                <a href="?category=Food">Food</a><br>
+                <a href="?category=Nature">Nature</a><br>
                 <a href="?category=Liked">Liked</a>
-            </div>
-            <a href="/">Main</a>
-            <div class="bottom-post">
-                <button id="postsButton">Posts</button>
-                <a href="?category=UserPosts">My Posts</a>
-                <button id="logoutButton" class="button-main" style="display: none;">Logout</button>
-            </div>
+            </div><br>
+            <button onclick="showSection(mainSection,'/');" class="button-side">Main</button><br>
+          
+                <button id="postsButton" class="button-side">Posts</button><br>
+                <button id="myPostsButton" class="button-side">My Posts</button><br>
+                <button id="logoutPostButton" class="button-side">Logout</button>
+           
         </div>
-
+        <div class="container-main">
+            <button class="button-create" onclick="showSection(createPostSection, '/create-post');">Create Post</button>    
+        </div>
+       
         <div class="container-post">
-            <h1>Posts</h1>
-            <button id="createPostButton" class="button-main">Create Post</button>
-            <br>
 
             <!-- This is where posts will be dynamically inserted -->
-            <div id="postsContainer"></div>
+            <div id="postsContainer">
+                
+            </div>
         </div>
     </section>
 
@@ -133,15 +135,14 @@
             <form id="createPostForm" action="" method="POST">
                 <label for="title">Title:</label>
                 <input type="text" id="title" name="title" required>
-                
                 <label for="content">Content:</label>
                 <textarea id="content" name="content" rows="6" required></textarea>
-
-                <label for="category">Category:</label>
+                <br><br><label for="category">Category:</label>
 
                     <label>
                         <input type="checkbox" name="category" value="Nature"> Nature
                     </label>
+                    
                     <label>
                         <input type="checkbox" name="category" value="Food"> Food
                     </label>
@@ -150,8 +151,7 @@
                     </label>
                     <label>
                         <input type="checkbox" name="category" value="Travel"> Travel
-                    </label>
-                <br>
+                    </label><br><br>
                 <input type="submit" value="Post it" class="button-create">
             </form>
         </div>
