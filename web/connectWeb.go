@@ -54,10 +54,21 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
-		
 			p.CreatePost(db, w, r) // ✅ This is the API to save posts
-		
+	})
 
+	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
+		postIDStr := r.URL.Query().Get("post_id")
+		postID, err := strconv.Atoi(postIDStr)
+		if err != nil || postID <= 0 {
+			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			return
+		}
+		p.GetComments(db, w, r)
+	})
+	
+	http.HandleFunc("/create-comment", func(w http.ResponseWriter, r *http.Request) {
+		p.CreateComment(db, w, r) // Ensure this handles comment creation
 	})
 
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {

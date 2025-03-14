@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	"forum/database" // Ensure your database package is imported
+	database "forum/database" // Ensure your database package is imported
 
 	"github.com/google/uuid"
 )

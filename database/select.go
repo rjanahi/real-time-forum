@@ -132,3 +132,4 @@ func GetCategoriesByPostID(db *sql.DB, postID int) ([]string, error) {
 	return categories, nil
 }
 
+

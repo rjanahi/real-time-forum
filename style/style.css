@@ -17,7 +17,7 @@ small {
     margin-top: 0.5rem; 
 }
 
- .mainPage, .postPage ,.signUp ,.logIn ,.createPost, .aboutUs{
+ .mainPage, .postPage ,.signUp ,.logIn ,.createPost, .aboutUs,.comments{
     margin: 0; /* Remove default margin */
     padding: 0; /* Remove default padding */
     width: 100%; /* Full width */
@@ -25,7 +25,7 @@ small {
     display: flex; /* Use flexbox for layout */
 }
 
-.postPage ,.signUp ,.logIn ,.createPost, .aboutUs{
+.postPage ,.signUp ,.logIn ,.createPost, .aboutUsm, .comments{
     display: none;
 }
 
