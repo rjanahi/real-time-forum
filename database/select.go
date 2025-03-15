@@ -224,3 +224,49 @@ func GetPostsByUserID(db *sql.DB, userID int) ([]map[string]interface{}, error) 
 	}
 	return posts, nil
 }
+
+func GetPostByCategoryID(db *sql.DB, category string) ([]map[string]interface{}, error) {
+	query := `
+	SELECT p.id, u.username, p.title, p.content, p.created_at 
+	FROM posts p
+	JOIN categories c ON p.user_id = u.id 
+	WHERE p.id = ?`
+
+	rows, err := db.Query(query, category)
+	if err != nil {
+		fmt.Println("❌ Error retrieving posts:", err)
+		return nil, err
+	}
+	defer rows.Close()
+	var posts []map[string]interface{}
+	for rows.Next() {
+		var postID int
+		var username, title, content string
+		var createdAt time.Time
+
+		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
+		if err != nil {
+			fmt.Println("❌ Error scanning post:", err)
+			return nil, err
+		}
+
+		// Fetch categories for this post
+		categories, err := GetCategoriesByPostID(db, postID)
+		if err != nil {
+			fmt.Println("❌ Error retrieving categories for post:", err)
+			return nil, err
+		}
+
+		// Store post in slice
+		post := map[string]interface{}{
+			"id":         postID,
+			"username":   username,
+			"title":      title,
+			"content":    content,
+			"categories": categories, // ✅ Include categories
+			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
+		}
+		posts = append(posts, post)
+	}
+	return posts, nil
+}

@@ -111,6 +111,11 @@ func ConnectWeb(db *sql.DB) {
 		p.CreateComment(db, w, r) // Ensure this handles comment creation
 	})
 
+	http.HandleFunc("/category", func(w http.ResponseWriter, r *http.Request) {
+		category := r.URL.Path
+		p.GetPostbyCategory(db, w, r,category) // Ensure this handles comment creation
+	})
+
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
 		userID, loggedIn := u.ValidateSession(db, r)
 		response := map[string]interface{}{

@@ -68,15 +68,42 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(posts)
 }
 
-func GetPost(db *sql.DB, w http.ResponseWriter, r *http.Request,postID int) {
+func GetPostsID(db *sql.DB, w http.ResponseWriter, r *http.Request)([]int ,error) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-		return
+		return nil,nil
 	}
 
-	posts,_ := database.GetPostByPostID(db,postID)
+	// Query posts from database
+	rows, err := db.Query(`SELECT posts.id, users.username, posts.title, posts.content, posts.created_at 
+                           FROM posts 
+                           JOIN users ON posts.user_id = users.id 
+                           ORDER BY posts.created_at DESC`)
+	if err != nil {
+		fmt.Println("❌ Error retrieving posts:", err)
+		http.Error(w, "Failed to retrieve posts", http.StatusInternalServerError)
+		return nil,nil
+	}
+	defer rows.Close()
 
-	// Return posts as JSON
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	// Create a slice to hold posts
+	var posts []int
+
+	// Iterate through rows
+	for rows.Next() {
+		var postID int
+		var username, title, content string
+		var createdAt time.Time
+
+		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
+		if err != nil {
+			fmt.Println("❌ Error scanning post:", err)
+			http.Error(w, "Failed to process posts", http.StatusInternalServerError)
+			return nil,nil
+		}
+		posts = append(posts, postID)
+		
+	}
+
+	return posts, nil
 }
