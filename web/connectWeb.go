@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"strings"
 
+	"forum/apis/like"
+	likerepo "forum/apis/like/repo"
 	p "forum/apis/post"
 	u "forum/apis/user"
 	"forum/database"
@@ -74,6 +76,16 @@ func ConnectWeb(db *sql.DB) {
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
 		p.CreatePost(db, w, r) // ✅ This is the API to save posts
 	})
+
+	// likes
+	likesRepo := likerepo.NewLikesRepository(db)
+	likesService := like.NewLikesService(likesRepo)
+	likesController := like.NewLikesController(*likesService)
+	http.HandleFunc("/likeDislikePost", func(w http.ResponseWriter, r *http.Request) {
+		likesController.LikeDislikePost(w, r, db)
+	})
+	http.HandleFunc("/likeDislikeComment", likesController.InteractWithComment)
+	http.HandleFunc("/getInteractions", likesController.GetInteractions)
 
 	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
 		postIDStr := r.URL.Query().Get("post_id")
@@ -220,6 +232,7 @@ func getTableNames(db *sql.DB) ([]string, error) {
 	if err := rows.Err(); err != nil {
 		return nil, err
 	}
+	fmt.Println(tables)
 
 	return tables, nil
 }

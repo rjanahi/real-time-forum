@@ -40,12 +40,14 @@ function showSection(sectionToShow, urlSuffix) {
 // Consolidated event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
+
+  
     
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
     if (postsButton) postsButton.addEventListener('click', () => showSection(postPageSection, '/posts'));
-   if (createPostButton) createPostButton.addEventListener('click', ()=> showSection(createPostSection, "/create-post"))
+    if (createPostButton) createPostButton.addEventListener('click', ()=> showSection(createPostSection, "/create-post"))
     if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
     if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
 
@@ -180,6 +182,7 @@ if (loginForm) {
                 .catch(error => alert("An error occurred: " + error.message));
         });
     }
+    
 
     function loadPosts() {
         fetch('/get-posts', {
@@ -194,7 +197,7 @@ if (loginForm) {
             postContainer.innerHTML = '<h1>Posts</h1>';
             
            
-            if (!posts.length) {
+            if (posts == null) {
                 postContainer.innerHTML += "<p>No posts available.</p>";
                 return;
             }
@@ -208,10 +211,19 @@ if (loginForm) {
                         <p>${post.content}</p>
                         <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
                         <small>Category: ${post.categories.join(", ")}</small>
+                        <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
-                    </div>
+                        <br><br>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
+<small>
+                        <span id="likesCountPost${post.id}">Likes: 0</span>
+                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
+                    </small>                    </div>
                 `;
                 postContainer.appendChild(postElement);
+                 // ✅ Fetch updated likes/dislikes for this post
+            getInteractions(post.id);
             });
     
             document.querySelectorAll('.commentsButton').forEach(button => {
@@ -249,10 +261,19 @@ if (loginForm) {
                         <p>${post.content}</p>
                         <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
                         <small>Category: ${post.categories.join(", ")}</small>
+                        <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
-                    </div>
+                        <br><br>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
+<small>
+                        <span id="likesCountPost${post.id}">Likes: 0</span>
+                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
+                    </small>                    </div>
                 `;
                 postContainer.appendChild(postElement);
+                 // ✅ Fetch updated likes/dislikes for this post
+            getInteractions(post.id);
             });
     
             document.querySelectorAll('.commentsButton').forEach(button => {
@@ -310,10 +331,19 @@ if (loginForm) {
                         <p>${post.content}</p>
                         <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
                         <small>Category: ${post.categories.join(", ")}</small>
+                        <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
-                    </div>
+                        <br><br>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
+<small>
+                        <span id="likesCountPost${post.id}">Likes: 0</span>
+                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
+                    </small>                    </div>
                 `;
                 postContainer.appendChild(postElement);
+                 // ✅ Fetch updated likes/dislikes for this post
+            getInteractions(post.id);
             });
 
             document.querySelectorAll('.commentsButton').forEach(button => {
@@ -489,7 +519,92 @@ if(postsPageButton)postsPageButton.addEventListener('click',loadPosts);
         checkSession();
         loadPosts();
     });
+
+    
 });
+
+
+function likeDislikePost(postId, isLike) {
+    let likesElement = document.getElementById(`likesCountPost${postId}`);
+    let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
+
+    if (!likesElement || !dislikesElement) {
+        console.error(`❌ Elements for post ${postId} not found.`);
+        return;
+    }
+
+    // ✅ Update UI instantly before waiting for the server response
+    let currentLikes = parseInt(likesElement.innerText.replace("Likes: ", "")) || 0;
+    let currentDislikes = parseInt(dislikesElement.innerText.replace("Dislikes: ", "")) || 0;
+
+    if (isLike) {
+        likesElement.innerText = `Likes: ${currentLikes + 1}`;
+    } else {
+        dislikesElement.innerText = `Dislikes: ${currentDislikes + 1}`;
+    }
+
+    // ✅ Send the request to update on the backend
+    fetch('/likeDislikePost', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ post_id: postId, is_like: isLike }),
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("✅ Like/Dislike Response:", data);
+
+        if (data.message === 'Interaction done successfully') {
+            // ✅ Fetch fresh data after a delay to ensure database update
+            setTimeout(() => getInteractions(postId), 300);
+        } else {
+            alert(data.error || "Something went wrong.");
+        }
+    })
+    .catch(error => {
+        console.error('❌ Error:', error);
+    });
+}
+
+
+function getInteractions(postId) {
+    fetch('/getInteractions', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ post_id: postId }),
+        cache: "no-cache" // 🚀 Ensure fresh data
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("📥 Updated Interaction Data:", data);
+
+        // ✅ Ensure data exists
+        if (!data || typeof data.likes === "undefined" || typeof data.dislikes === "undefined") {
+            console.error("❌ Invalid data received:", data);
+            return;
+        }
+
+        // ✅ Ensure elements exist before updating
+        let likesElement = document.getElementById(`likesCountPost${postId}`);
+        let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
+
+        if (likesElement) {
+            likesElement.innerText = `Likes: ${data.likes}`;
+        } else {
+            console.error(`❌ Element not found: likesCountPost${postId}`);
+        }
+
+        if (dislikesElement) {
+            dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
+        } else {
+            console.error(`❌ Element not found: dislikesCountPost${postId}`);
+        }
+    })
+    .catch(error => console.error('❌ Error fetching likes/dislikes:', error));
+}
 
 function checkSession() {
     fetch('/check-session', {
@@ -532,3 +647,4 @@ function toggleDropdown(id) {
     var dropdown = document.getElementById(id);
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; // Toggle visibility
 }
+

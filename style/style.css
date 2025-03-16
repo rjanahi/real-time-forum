@@ -284,3 +284,8 @@ input[type="submit"]:hover {
 .return-button:hover {
     background-color: #555555; /* Dark gray on hover */
 }
+
+.material-icons {
+    cursor: pointer;
+    color: gray;
+}

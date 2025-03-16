@@ -89,6 +89,8 @@ func InsertComment(db *sql.DB, postID, userID int, content string) (int64, time.
 func InsertLike(db *sql.DB, userID, postID, commentID int, isLike bool) error {
 	query := `INSERT INTO likes (user_id, post_id, comment_id, is_like) VALUES (?, ?, ?, ?)`
 	_, err := db.Exec(query, userID, postID, commentID, isLike)
+
+
 	return err
 }
 
