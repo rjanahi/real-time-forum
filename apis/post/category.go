@@ -9,37 +9,28 @@ import (
 )
 
 func GetPostbyCategory(db *sql.DB, w http.ResponseWriter, r *http.Request, category string) {
-	var posts []map[string]interface{}
-	// grab the category id from the category string
-	postIDS, err := GetPostsID(db, w, r)
+	// Fetch the category ID based on the category name
+	categoryID, err := database.GetCategoryIDByName(db, category)
 	if err != nil {
-		fmt.Println("❌ Error retrieving post ID's:", err)
-		http.Error(w, "Error retrieving post ID's", http.StatusInternalServerError)
-		return
-	}
-	for i := 0; i < len(postIDS); i++ {
-		// Fetch categories for this post
-		categories, err := database.GetCategoriesByPostID(db, postIDS[i])
-		if err != nil {
-			fmt.Println("❌ Error retrieving categories for post:", err)
-			http.Error(w, "Failed to retrieve categories", http.StatusInternalServerError)
-			return
-		}
-		for j := 0; j < len(postIDS); j++ {
-			if category == categories[j] {
-				categoryPost, err := database.GetPostByCategoryID(db, category)
-				if err != nil {
-					fmt.Println("❌ Error retrieving post from category:", err)
-					http.Error(w, "Failed to retrieve post from category", http.StatusInternalServerError)
-					return
-				}
-				posts = categoryPost
-			}
-		}
+		fmt.Println("❌ Error retrieving category ID:", err)
+		categoryID, _ = database.InsertCategory(db, category)
 	}
 
-	//after that send all the posts to the interface.
-	// Return posts as JSON
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(posts)
+	// Fetch posts by category ID
+	posts, err := database.GetPostByCategoryID(db, categoryID)
+	if err != nil {
+		fmt.Println("❌ Error retrieving posts from category:", err)
+		http.Error(w, "Failed to retrieve posts from category", http.StatusInternalServerError)
+		return
+	}
+
+	if len(posts) < 1 {
+		posts = []map[string]interface{}{}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts)
+	}
+
 }

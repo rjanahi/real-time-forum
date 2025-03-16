@@ -225,19 +225,21 @@ func GetPostsByUserID(db *sql.DB, userID int) ([]map[string]interface{}, error) 
 	return posts, nil
 }
 
-func GetPostByCategoryID(db *sql.DB, category string) ([]map[string]interface{}, error) {
+func GetPostByCategoryID(db *sql.DB, catID int) ([]map[string]interface{}, error) {
 	query := `
 	SELECT p.id, u.username, p.title, p.content, p.created_at 
 	FROM posts p
-	JOIN categories c ON p.user_id = u.id 
-	WHERE p.id = ?`
+	JOIN post_categories pc ON pc.post_id = p.id
+	JOIN categories c ON c.id = pc.category_id
+	JOIN users u ON u.id = p.user_id
+	WHERE c.id = ?`
 
-	rows, err := db.Query(query, category)
+	rows, err := db.Query(query, catID)
 	if err != nil {
-		fmt.Println("❌ Error retrieving posts:", err)
-		return nil, err
+		return nil, fmt.Errorf("error querying posts: %w", err)
 	}
 	defer rows.Close()
+
 	var posts []map[string]interface{}
 	for rows.Next() {
 		var postID int
@@ -246,27 +248,39 @@ func GetPostByCategoryID(db *sql.DB, category string) ([]map[string]interface{},
 
 		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
 		if err != nil {
-			fmt.Println("❌ Error scanning post:", err)
-			return nil, err
+			return nil, fmt.Errorf("error scanning post: %w", err)
 		}
-
-		// Fetch categories for this post
 		categories, err := GetCategoriesByPostID(db, postID)
 		if err != nil {
-			fmt.Println("❌ Error retrieving categories for post:", err)
+			fmt.Println("❌ Error retrieving categories:", err)
 			return nil, err
 		}
 
-		// Store post in slice
 		post := map[string]interface{}{
 			"id":         postID,
 			"username":   username,
 			"title":      title,
 			"content":    content,
-			"categories": categories, // ✅ Include categories
+			"categories": categories,
 			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
 		}
 		posts = append(posts, post)
 	}
+
 	return posts, nil
+}
+
+func GetCategoryIDByName(db *sql.DB, category string) (int, error) {
+	var categoryID int
+	query := `SELECT id FROM categories WHERE name = ?`
+
+	err := db.QueryRow(query, category).Scan(&categoryID)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return 0, fmt.Errorf("category '%s' not found", category)
+		}
+		return 0, fmt.Errorf("error retrieving category '%s': %v", category, err)
+	}
+
+	return categoryID, nil
 }

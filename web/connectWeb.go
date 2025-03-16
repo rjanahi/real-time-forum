@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"strings"
 
 	p "forum/apis/post"
 	u "forum/apis/user"
@@ -111,9 +112,10 @@ func ConnectWeb(db *sql.DB) {
 		p.CreateComment(db, w, r) // Ensure this handles comment creation
 	})
 
-	http.HandleFunc("/category", func(w http.ResponseWriter, r *http.Request) {
-		category := r.URL.Path
-		p.GetPostbyCategory(db, w, r,category) // Ensure this handles comment creation
+	http.HandleFunc("/category/", func(w http.ResponseWriter, r *http.Request) {
+		category := strings.TrimPrefix(r.URL.Path, "/category/")
+		fmt.Println(category)
+		p.GetPostbyCategory(db, w, r, category)
 	})
 
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {

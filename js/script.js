@@ -20,6 +20,7 @@ const sendCommentButton = document.getElementById("sendCommentButton");
 const loginSignUpButton = document.getElementById('signUpButtonLogin');
 const logoutPostButton = document.getElementById('logoutPostButton');
 const postMyPageButton = document.getElementById('postMyPageButton');
+const categoryButtons = document.querySelectorAll('#categoryOptions .button-side');
 
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
@@ -205,7 +206,8 @@ if (loginForm) {
                     <div class="comment-post">
                         <h2>${post.title}</h2>
                         <p>${post.content}</p>
-                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
+                        <small>Category: ${post.categories.join(", ")}</small>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                     </div>
                 `;
@@ -245,7 +247,8 @@ if (loginForm) {
                     <div class="comment-post">
                         <h2>${post.title}</h2>
                         <p>${post.content}</p>
-                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
+                        <small>Category: ${post.categories.join(", ")}</small>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                     </div>
                 `;
@@ -260,8 +263,66 @@ if (loginForm) {
         .catch(error => console.error("Error loading posts:", error));
     }
 
+    function loadCategoryPosts(category) {
+        fetch('/category/' + category, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(posts => {
+            const postContainer = document.querySelector('.container-post');
 
-    
+            // Debugging: Log the postContainer to check if it's null
+            console.log('Post container:', postContainer);
+
+            // Check if postContainer is null
+            if (!postContainer) {
+                console.error("Post container not found!");
+                return;
+            }
+
+            postContainer.innerHTML = ''; // Clear previous posts
+            postContainer.innerHTML += '<h1>Posts</h1>';
+            
+            if (!Array.isArray(posts)) {
+                console.error("Expected posts to be an array, but got:", posts);
+                postContainer.innerHTML += "<p>Error loading posts.</p>";
+                return;
+            }
+
+            if (posts.length === 0) {
+                postContainer.innerHTML += "<p>No posts available.</p>";
+                return;
+            }
+
+            posts.forEach(post => {
+                const postElement = document.createElement('div');
+                postElement.classList.add('post-post');
+                postElement.innerHTML = `
+                    <div class="comment-post">
+                        <h2>${post.title}</h2>
+                        <p>${post.content}</p>
+                        <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small><br>
+                        <small>Category: ${post.categories.join(", ")}</small>
+                        <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
+                    </div>
+                `;
+                postContainer.appendChild(postElement);
+            });
+
+            document.querySelectorAll('.commentsButton').forEach(button => {
+                button.addEventListener('click', () => loadCommentsForPost(button.dataset.postId));
+            });
+        })
+        .catch(error => console.error("Error loading posts:", error));
+    }
+
     if (logoutPostButton) {
         logoutPostButton.addEventListener('click', function () {
             fetch('/logout', {
@@ -410,8 +471,18 @@ function loadCommentsForPost(postId) {
     
 
 }
+
 if(postMyPageButton)postMyPageButton.addEventListener('click',loadMyPosts);
 if(postsPageButton)postsPageButton.addEventListener('click',loadPosts);
+// Assuming categoryButton is defined and is a button element
+
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.value; // Get the category from the button's value
+            loadCategoryPosts(category); // Call the function to load posts for the selected category
+        });
+    });
+
 
 
     postsButton.addEventListener('click', () => {
@@ -455,4 +526,9 @@ function checkSession() {
             }
         })
         .catch(error => console.error("Session check failed:", error));
+}
+
+function toggleDropdown(id) {
+    var dropdown = document.getElementById(id);
+    dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; // Toggle visibility
 }
