@@ -34,7 +34,7 @@ func CreatePost(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	var postData Post
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&postData); err != nil {
-		fmt.Println("❌ JSON Decoding Error:", err)
+		fmt.Println(" JSON Decoding Error:", err)
 		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
@@ -48,7 +48,7 @@ func CreatePost(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Insert the post into the database
 	postID, createdAt, err := database.InsertPost(db, userID, postData.Title, postData.Content)
 	if err != nil {
-		fmt.Println("❌ Error inserting post:", err)
+		fmt.Println(" Error inserting post:", err)
 		http.Error(w, "Failed to create post", http.StatusInternalServerError)
 		return
 	}
@@ -57,14 +57,14 @@ func CreatePost(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	for _, categoryName := range postData.Categories {
 		categoryID, err := database.GetCategoryID(db, categoryName)
 		if err != nil {
-			fmt.Println("❌ Error getting category ID:", err)
+			fmt.Println(" Error getting category ID:", err)
 			http.Error(w, "Failed to retrieve category", http.StatusInternalServerError)
 			return
 		}
 
 		err = database.InsertPostCategory(db, int(postID), categoryID)
 		if err != nil {
-			fmt.Println("❌ Error linking post to category:", err)
+			fmt.Println(" Error linking post to category:", err)
 			http.Error(w, "Failed to associate post with category", http.StatusInternalServerError)
 			return
 		}

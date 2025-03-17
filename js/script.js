@@ -41,18 +41,52 @@ function showSection(sectionToShow, urlSuffix) {
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
 
-  
-    
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
-    if (postsButton) postsButton.addEventListener('click', () => showSection(postPageSection, '/posts'));
+    if (postsButton){ 
+        postsButton.addEventListener('click', () => showSection(postPageSection, '/posts'));
+        checkSession();
+        loadPosts();
+    }
     if (createPostButton) createPostButton.addEventListener('click', ()=> showSection(createPostSection, "/create-post"))
     if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
     if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
+    if (loginSignUpButton) loginSignUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
+    if(postMyPageButton)postMyPageButton.addEventListener('click',loadMyPosts);
+    if(postsPageButton)postsPageButton.addEventListener('click',loadPosts); 
+    if (logoutPostButton) {
+        logoutPostButton.addEventListener('click', function () {
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                checkSession(); // Refresh UI
+                showSection(mainSection, '/'); // Redirect to main page
+            })
+            .catch(error => console.error("Logout failed:", error));
+        });
+    }
+    categoryButtons.forEach(button => {
+        button.addEventListener('click', () => {
+            const category = button.value; // Get the category from the button's value
+            loadCategoryPosts(category);
+        });
+    });
 
-    // Registration form submission
+    // Registration form
     const registrationForm = document.getElementById('registrationForm');
+
+   // Login form 
+   const loginForm = document.getElementById('loginForm');
+   
+    // Create form submission
+    const createPostForm = document.getElementById('createPostForm');
+
+   // Registration form 
     if (registrationForm) {
         registrationForm.addEventListener('submit', function (event) {
             event.preventDefault(); // Prevent default form submission
@@ -91,65 +125,40 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-   // Login form submission
-const loginForm = document.getElementById('loginForm');
-if (loginForm) {
-    loginForm.addEventListener('submit', function (event) {
-        event.preventDefault(); // Prevent default form submission
-
-        const loginData = {
-            userOremail: document.getElementById('userOremail').value,
-            password: document.getElementById('pass').value
-        };
-
-        fetch('/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(loginData),
-            credentials: 'include' // Allows cookies to be sent with the request
-        })
-        .then(response => response.json())
-        .then(data => {
-            alert(data.message);
-            if (data.message === "Login successful.") {
-                checkSession(); // Refresh session check
-                loginForm.reset();
-                showSection(postPageSection, '/posts'); // Navigate to posts section
-                loadPosts(); // Load posts after navigating to the posts section
-            } else {
-                checkSession(); // Update UI based on session status
-                loginForm.reset();
-            }
-        })
-        .catch(error => alert("An error occurred: " + error.message));
-    });
-}
-
-    // Logout functionality
-    if (logoutButton) {
-        logoutButton.addEventListener('click', function () {
-            fetch('/logout', {
+    // Login form 
+    if (loginForm) {
+        loginForm.addEventListener('submit', function (event) {
+            event.preventDefault(); // Prevent default form submission
+    
+            const loginData = {
+                userOremail: document.getElementById('userOremail').value,
+                password: document.getElementById('pass').value
+            };
+    
+            fetch('/login', {
                 method: 'POST',
-                credentials: 'include'
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(loginData),
+                credentials: 'include' // Allows cookies to be sent with the request
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.message);
-                checkSession(); // Refresh session check to update UI
-                showSection(mainSection, '/'); // Redirect to main page after logout
+                console.log(data.message);
+                if (data.message === "Login successful.") {
+                    checkSession(); // Refresh session check
+                    loginForm.reset();
+                    showSection(postPageSection, '/posts'); // Navigate to posts section
+                    loadPosts(); // Load posts after navigating to the posts section
+                } else {
+                    checkSession(); // Update UI based on session status
+                    loginForm.reset();
+                }
             })
-            .catch(error => console.error("Logout failed:", error));
+            .catch(error => alert("An error occurred: " + error.message));
         });
     }
-    
 
-    // Dynamically add Sign Up Button in Login Section
-    if (loginSignUpButton) {
-        loginSignUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
-    }
-
-    // Post form submission
-    const createPostForm = document.getElementById('createPostForm');
+    //Create form
     if (createPostForm) {
         createPostForm.addEventListener('submit', function (event) {
             event.preventDefault(); // Prevent default form submission
@@ -174,7 +183,7 @@ if (loginForm) {
             })
                 .then(response => response.json())
                 .then(data => {
-                    alert(data.success ? "Post created successfully!" : "Error: " + data.message);
+                    console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
                     if (data.success) createPostForm.reset();
                     loadPosts();
                     showSection(postPageSection, '/posts');
@@ -183,7 +192,25 @@ if (loginForm) {
         });
     }
     
+    // Logout functionality
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function () {
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log(data.message);
+                checkSession(); // Refresh session check to update UI
+                showSection(mainSection, '/'); // Redirect to main page after logout
+            })
+            .catch(error => console.error("Logout failed:", error));
+        });
+    }
+    
 
+    //load all the posts
     function loadPosts() {
         fetch('/get-posts', {
             method: 'GET',
@@ -222,7 +249,7 @@ if (loginForm) {
                     </small>                    </div>
                 `;
                 postContainer.appendChild(postElement);
-                 // ✅ Fetch updated likes/dislikes for this post
+                 //  Fetch updated likes/dislikes for this post
             getInteractions(post.id);
             });
     
@@ -234,6 +261,7 @@ if (loginForm) {
         .catch(error => console.error("Error loading posts:", error));
     }
 
+    //load only user posts
     function loadMyPosts() {
         fetch('/get-myPosts', {
             method: 'GET',
@@ -247,7 +275,7 @@ if (loginForm) {
             postContainer.innerHTML += '<h1>Posts</h1>';
             
            
-            if (!posts.length) {
+            if (posts == null) {
                 postContainer.innerHTML += "<p>No posts available.</p>";
                 return;
             }
@@ -272,7 +300,7 @@ if (loginForm) {
                     </small>                    </div>
                 `;
                 postContainer.appendChild(postElement);
-                 // ✅ Fetch updated likes/dislikes for this post
+                 //  Fetch updated likes/dislikes for this post
             getInteractions(post.id);
             });
     
@@ -284,6 +312,7 @@ if (loginForm) {
         .catch(error => console.error("Error loading posts:", error));
     }
 
+    //load posts with specific category
     function loadCategoryPosts(category) {
         fetch('/category/' + category, {
             method: 'GET',
@@ -335,14 +364,13 @@ if (loginForm) {
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                         <br><br>
                         <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
-<small>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span><small>
                         <span id="likesCountPost${post.id}">Likes: 0</span>
-                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
-                    </small>                    </div>
-                `;
+                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span></small>
+                        </div>
+                        `;
                 postContainer.appendChild(postElement);
-                 // ✅ Fetch updated likes/dislikes for this post
+                 //  Fetch updated likes/dislikes for this post
             getInteractions(post.id);
             });
 
@@ -353,21 +381,6 @@ if (loginForm) {
         .catch(error => console.error("Error loading posts:", error));
     }
 
-    if (logoutPostButton) {
-        logoutPostButton.addEventListener('click', function () {
-            fetch('/logout', {
-                method: 'POST',
-                credentials: 'include'
-            })
-            .then(response => response.json())
-            .then(data => {
-                alert(data.message);
-                checkSession(); // Refresh UI
-                showSection(mainSection, '/'); // Redirect to main page
-            })
-            .catch(error => console.error("Logout failed:", error));
-        });
-    }
 
 function loadCommentsForPost(postId) {
     fetch(`/comments?post_id=${postId}`, {
@@ -377,13 +390,13 @@ function loadCommentsForPost(postId) {
     })
     .then(response => response.text()) // Read response as text first
     .then(text => {
-        console.log("📥 Raw Response:", text);
+        console.log(" Raw Response:", text);
         try {
             const parsedResponse = JSON.parse(text);
 
             // Handle case where response contains an error
             if (parsedResponse.error) {
-                console.error("❌ Server Error:", parsedResponse.error);
+                console.error(" Server Error:", parsedResponse.error);
                 commentsSection.innerHTML = `<p>Error loading comments: ${parsedResponse.error}</p>`;
                 return;
             }
@@ -394,7 +407,7 @@ function loadCommentsForPost(postId) {
         <div class="comment-post">
             <h2>${post.title}</h2>
             <p>${post.content}</p>
-            <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+            <small>Posted by <strong>${post.username}</strong> on ${post.createdAt} - ${post.categories.join(', ')} </small>
         </div>
         <div class="container-about">
             <h2>Comments</h2>
@@ -412,7 +425,7 @@ function loadCommentsForPost(postId) {
                 commentsList.innerHTML = "<p>No comments available for this post.</p>";
             } else {
                 comments.forEach(comment => {
-                    console.log("✅ Loaded Comment ID:", comment.id);
+                    console.log(" Loaded Comment ID:", comment.id);
                     let formattedDate = "Unknown Date";
                     if (comment.created_at) { // Use created_at instead of createdAt
                         try {
@@ -421,18 +434,19 @@ function loadCommentsForPost(postId) {
                             if (!isNaN(date)) {
                                 formattedDate = date.toLocaleString(); // Formats date and time
                             } else {
-                                console.error("❌ Invalid Date:", comment.created_at);
+                                console.error(" Invalid Date:", comment.created_at);
                             }
                         } catch (error) {
-                            console.error("❌ Error parsing date:", error);
+                            console.error(" Error parsing date:", error);
                         }
                     }
                 
                     commentsList.innerHTML += `
                         <div id="comment-${comment.id}">
+                         <p><strong>${comment.username}:</strong> ${comment.content}
+                            <small>${formattedDate}</small></p>
                             <span class="material-icons" id="likeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, true)"> thumb_up </span>
                             <span id="likesCountComment${comment.id}">0</span>
-    
                             <span class="material-icons" id="dislikeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, false)"> thumb_down </span>
                             <span id="dislikesCountComment${comment.id}">0</span>
                         </div>
@@ -440,13 +454,13 @@ function loadCommentsForPost(postId) {
                 });
             }
 
-            // ✅ Stay on the comments page
+            //  Stay on the comments page
             showSection(commentsSection, `/comment/${postId}`);
 
             if(document.getElementById("return-to-posts")){
                 document.getElementById("return-to-posts").addEventListener('click', () => {
                 showSection(postPageSection, `/posts`);
-                loadPosts(); // ✅ Ensure posts are loaded
+                loadPosts(); //  Ensure posts are loaded
             });
             }
             
@@ -460,7 +474,7 @@ function loadCommentsForPost(postId) {
                 const postID = document.querySelector("#postID").value;
         
                 if (!commentText) {
-                    // alert("Comment cannot be empty.");
+                    console.log("Comment cannot be empty.");
                     return;
                 }
         
@@ -471,35 +485,35 @@ function loadCommentsForPost(postId) {
                 fetch("/create-comment", {
                     method: "POST",
                     headers: { 
-                        "Accept": "application/json",  // ✅ Ensure JSON response
-                        "Content-Type": "application/json"  // ✅ Ensure JSON request
+                        "Accept": "application/json",  //  Ensure JSON response
+                        "Content-Type": "application/json"  //  Ensure JSON request
                     },
                     credentials: "include",
                     body: requestBody
                 })
                 .then(response => {
-                    console.log("📥 Response Headers:", response.headers.get("Content-Type"));
+                    console.log(" Response Headers:", response.headers.get("Content-Type"));
                     return response.json();
                 })
                 .then(data => {
-                    console.log("✅ Server Response:", data);
-                    // alert(data.success ? "Comment posted successfully!" : "Error: " + data.message);
+                    console.log(" Server Response:", data);
+                    console.log(data.success ? "Comment posted successfully!" : "Error: " + data.message);
 
-                    // ✅ Reload comments without redirecting away
+                    //  Reload comments without redirecting away
                     if (data.success) loadCommentsForPost(postID);
                     
                 })
-                .catch(error => console.error("❌ Error posting comment:", error));
+                .catch(error => console.error(" Error posting comment:", error));
             });
             
 
         } catch (error) {
-            console.error("❌ JSON Parsing Error:", error);
+            console.error(" JSON Parsing Error:", error);
             commentsSection.innerHTML = "<p>Failed to load comments.</p>";
         }
     })
     .catch(error => {
-        console.error("❌ Error loading comments:", error);
+        console.error(" Error loading comments:", error);
         commentsSection.innerHTML = "<p>Failed to load comments.</p>";
     });
     
@@ -513,7 +527,7 @@ function likeDislikeComment(commentId, isLike) {
     let dislikesElement = document.getElementById(`dislikesCountComment${commentId}`);
 
     if (!likesElement || !dislikesElement) {
-        console.error(`❌ Elements for comment ${commentId} not found.`);
+        console.error(` Elements for comment ${commentId} not found.`);
         return;
     }
 
@@ -525,37 +539,17 @@ function likeDislikeComment(commentId, isLike) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ Like/Dislike Comment Response:", data);
+        console.log(" Like/Dislike Comment Response:", data);
 
         if (data.message === 'Interaction updated successfully') {
             likesElement.innerText = `Likes: ${data.likes}`;
             dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
-            alert(data.error || "Something went wrong.");
+            console.log(data.error || "Something went wrong.");
         }
     })
-    .catch(error => console.error('❌ Error:', error));
+    .catch(error => console.error(' Error:', error));
 }
-
-
-if(postMyPageButton)postMyPageButton.addEventListener('click',loadMyPosts);
-if(postsPageButton)postsPageButton.addEventListener('click',loadPosts);
-// Assuming categoryButton is defined and is a button element
-
-    categoryButtons.forEach(button => {
-        button.addEventListener('click', () => {
-            const category = button.value; // Get the category from the button's value
-            loadCategoryPosts(category); // Call the function to load posts for the selected category
-        });
-    });
-
-
-
-    postsButton.addEventListener('click', () => {
-        checkSession();
-        loadPosts();
-    });
-
     
 });
 
@@ -565,7 +559,7 @@ function likeDislikePost(postId, isLike) {
     let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
 
     if (!likesElement || !dislikesElement) {
-        console.error(`❌ Elements for post ${postId} not found.`);
+        console.error(` Elements for post ${postId} not found.`);
         return;
     }
 
@@ -577,18 +571,18 @@ function likeDislikePost(postId, isLike) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ Like/Dislike Response:", data);
+        console.log(" Like/Dislike Response:", data);
 
         if (data.message === 'Interaction updated successfully') {
-            // ✅ Update UI only after getting the correct values from backend
+            //  Update UI only after getting the correct values from backend
             likesElement.innerText = `Likes: ${data.likes}`;
             dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
-            alert(data.error || "Something went wrong.");
+            console.log(data.error || "Something went wrong.");
         }
     })
     .catch(error => {
-        console.error('❌ Error:', error);
+        console.error(' Error:', error);
     });
 }
 
@@ -601,41 +595,41 @@ function getInteractions(postId) {
             'Content-Type': 'application/json',
         },
         body: JSON.stringify({ post_id: postId }),
-        cache: "no-cache" // 🚀 Ensure fresh data
+        cache: "no-cache" //  Ensure fresh data
     })
     .then(response => response.json())
     .then(data => {
-        console.log("📥 Updated Interaction Data:", data);
+        console.log(" Updated Interaction Data:", data);
 
-        // ✅ Ensure data exists
+        //  Ensure data exists
         if (!data || typeof data.likes === "undefined" || typeof data.dislikes === "undefined") {
-            console.error("❌ Invalid data received:", data);
+            console.error(" Invalid data received:", data);
             return;
         }
 
-        // ✅ Ensure elements exist before updating
+        //  Ensure elements exist before updating
         let likesElement = document.getElementById(`likesCountPost${postId}`);
         let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
 
         if (likesElement) {
             likesElement.innerText = `Likes: ${data.likes}`;
         } else {
-            console.error(`❌ Element not found: likesCountPost${postId}`);
+            console.error(` Element not found: likesCountPost${postId}`);
         }
 
         if (dislikesElement) {
             dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
-            console.error(`❌ Element not found: dislikesCountPost${postId}`);
+            console.error(` Element not found: dislikesCountPost${postId}`);
         }
     })
-    .catch(error => console.error('❌ Error fetching likes/dislikes:', error));
+    .catch(error => console.error(' Error fetching likes/dislikes:', error));
 }
 
 function checkSession() {
     fetch('/check-session', {
         method: 'GET',
-        credentials: 'include' // ✅ Ensures cookies are sent
+        credentials: 'include' //  Ensures cookies are sent
     })
         .then(response => response.json())
         .then(data => {
@@ -645,23 +639,23 @@ function checkSession() {
             const postsButton = document.getElementById('postsButton');
 
             if (data.loggedIn) {
-                console.log("✅ User is logged in:", data.userID);
+                console.log(" User is logged in:", data.userID);
 
-                // ✅ Hide sign-up & login buttons
+                //  Hide sign-up & login buttons
                 if (signUpButton) signUpButton.style.display = "none";
                 if (logInButton) logInButton.style.display = "none";
 
-                // ✅ Show logout & posts buttons
+                //  Show logout & posts buttons
                 if (logoutButton) logoutButton.style.display = "inline-block";
                 if (postsButton) postsButton.style.display = "inline-block";
             } else {
-                console.log("❌ User is not logged in.");
+                console.log(" User is not logged in.");
                 
-                // ✅ Show main menu and sign-up/login buttons
+                //  Show main menu and sign-up/login buttons
                 if (signUpButton) signUpButton.style.display = "inline-block";
                 if (logInButton) logInButton.style.display = "inline-block";
 
-                // ✅ Hide logout & posts buttons
+                //  Hide logout & posts buttons
                 if (logoutButton) logoutButton.style.display = "none";
                 if (postsButton) postsButton.style.display = "none";
             }

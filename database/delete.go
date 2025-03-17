@@ -48,7 +48,7 @@ func DeleteSession(db *sql.DB, sessionID int) error {
 	query := `DELETE FROM sessions WHERE id = ?`
 	_, err := db.Exec(query, sessionID)
 	if err != nil {
-		fmt.Println("❌ Error deleting session:", err)
+		fmt.Println(" Error deleting session:", err)
 	}
 	return err
 }

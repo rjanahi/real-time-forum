@@ -142,7 +142,7 @@ func GetPostByPostID(db *sql.DB, postID int) ([]map[string]interface{}, error) {
 
 	rows, err := db.Query(query, postID)
 	if err != nil {
-		fmt.Println("❌ Error retrieving posts:", err)
+		fmt.Println(" Error retrieving posts:", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -154,14 +154,14 @@ func GetPostByPostID(db *sql.DB, postID int) ([]map[string]interface{}, error) {
 
 		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
 		if err != nil {
-			fmt.Println("❌ Error scanning post:", err)
+			fmt.Println(" Error scanning post:", err)
 			return nil, err
 		}
 
 		// Fetch categories for this post
 		categories, err := GetCategoriesByPostID(db, postID)
 		if err != nil {
-			fmt.Println("❌ Error retrieving categories for post:", err)
+			fmt.Println(" Error retrieving categories for post:", err)
 			return nil, err
 		}
 
@@ -189,7 +189,7 @@ func GetPostsByUserID(db *sql.DB, userID int) ([]map[string]interface{}, error) 
 
 	rows, err := db.Query(query, userID)
 	if err != nil {
-		fmt.Println("❌ Error retrieving user posts:", err)
+		fmt.Println(" Error retrieving user posts:", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -202,13 +202,13 @@ func GetPostsByUserID(db *sql.DB, userID int) ([]map[string]interface{}, error) 
 
 		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
 		if err != nil {
-			fmt.Println("❌ Error scanning user post:", err)
+			fmt.Println(" Error scanning user post:", err)
 			return nil, err
 		}
 
 		categories, err := GetCategoriesByPostID(db, postID)
 		if err != nil {
-			fmt.Println("❌ Error retrieving categories:", err)
+			fmt.Println(" Error retrieving categories:", err)
 			return nil, err
 		}
 
@@ -252,7 +252,7 @@ func GetPostByCategoryID(db *sql.DB, catID int) ([]map[string]interface{}, error
 		}
 		categories, err := GetCategoriesByPostID(db, postID)
 		if err != nil {
-			fmt.Println("❌ Error retrieving categories:", err)
+			fmt.Println(" Error retrieving categories:", err)
 			return nil, err
 		}
 

@@ -98,7 +98,7 @@ func InsertSession(db *sql.DB, userID int, token string, expiresAt time.Time) er
 	query := `INSERT INTO sessions (user_id, token, expires_at) VALUES (?, ?, ?)`
 	_, err := db.Exec(query, userID, token, expiresAt)
 	if err != nil {
-		fmt.Println("❌ SQL Error inserting session:", err)
+		fmt.Println(" SQL Error inserting session:", err)
 	}
 	return err
 }

@@ -21,7 +21,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
                            JOIN users ON posts.user_id = users.id 
                            ORDER BY posts.created_at DESC`)
 	if err != nil {
-		fmt.Println("❌ Error retrieving posts:", err)
+		fmt.Println(" Error retrieving posts:", err)
 		http.Error(w, "Failed to retrieve posts", http.StatusInternalServerError)
 		return
 	}
@@ -38,7 +38,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
 		if err != nil {
-			fmt.Println("❌ Error scanning post:", err)
+			fmt.Println(" Error scanning post:", err)
 			http.Error(w, "Failed to process posts", http.StatusInternalServerError)
 			return
 		}
@@ -46,7 +46,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		// Fetch categories for this post
 		categories, err := database.GetCategoriesByPostID(db, postID)
 		if err != nil {
-			fmt.Println("❌ Error retrieving categories for post:", err)
+			fmt.Println(" Error retrieving categories for post:", err)
 			http.Error(w, "Failed to retrieve categories", http.StatusInternalServerError)
 			return
 		}
@@ -57,7 +57,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			"username":   username,
 			"title":      title,
 			"content":    content,
-			"categories": categories, // ✅ Include categories
+			"categories": categories, //  Include categories
 			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
 		}
 		posts = append(posts, post)
@@ -80,7 +80,7 @@ func GetPostsID(db *sql.DB, w http.ResponseWriter, r *http.Request)([]int ,error
                            JOIN users ON posts.user_id = users.id 
                            ORDER BY posts.created_at DESC`)
 	if err != nil {
-		fmt.Println("❌ Error retrieving posts:", err)
+		fmt.Println(" Error retrieving posts:", err)
 		http.Error(w, "Failed to retrieve posts", http.StatusInternalServerError)
 		return nil,nil
 	}
@@ -97,7 +97,7 @@ func GetPostsID(db *sql.DB, w http.ResponseWriter, r *http.Request)([]int ,error
 
 		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
 		if err != nil {
-			fmt.Println("❌ Error scanning post:", err)
+			fmt.Println(" Error scanning post:", err)
 			http.Error(w, "Failed to process posts", http.StatusInternalServerError)
 			return nil,nil
 		}

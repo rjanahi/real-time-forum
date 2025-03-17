@@ -32,12 +32,12 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&credentials); err != nil {
-		fmt.Println("❌ JSON Decoding Error:", err)
+		fmt.Println(" JSON Decoding Error:", err)
 		http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 		return
 	}
 
-	fmt.Println("✅ Parsed Credentials:", credentials)
+	fmt.Println(" Parsed Credentials:", credentials)
 
 	// Validate login
 	valid, errorNum := ValidateLog(credentials.UserOremail, credentials.Password, db)
@@ -63,49 +63,49 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// ✅ Get user ID
+	//  Get user ID
 	userID, err := GetUserID(db, credentials.UserOremail)
 	if err != nil {
-		fmt.Println("❌ Error getting user ID:", err)
+		fmt.Println(" Error getting user ID:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
-	// ✅ Check if there is an active session
+	//  Check if there is an active session
 	activeSessionID, err := database.GetActiveSessionbyUserID(db, userID)
 	if err != nil {
-		fmt.Println("❌ Error checking active session:", err)
+		fmt.Println(" Error checking active session:", err)
 		http.Error(w, "Internal server error", http.StatusInternalServerError)
 		return
 	}
 
 	// Log active session details
-	fmt.Println("✅ Active Session ID:", activeSessionID)
+	fmt.Println(" Active Session ID:", activeSessionID)
 
 	// If an active session exists, invalidate the old session
 	if activeSessionID != -1 {
 		err = database.DeleteSession(db, activeSessionID)
 		if err != nil {
-			fmt.Println("❌ Error deleting old session:", err)
+			fmt.Println(" Error deleting old session:", err)
 			http.Error(w, "Failed to invalidate previous session", http.StatusInternalServerError)
 			return
 		}
-		fmt.Println("✅ Old session invalidated.")
+		fmt.Println(" Old session invalidated.")
 	}
 
-	// ✅ Generate new session token and expiration
+	//  Generate new session token and expiration
 	sessionToken := uuid.New().String()
 	expiresAt := time.Now().Add(24 * time.Hour)
 
-	// ✅ Store new session in the database
+	//  Store new session in the database
 	err = database.InsertSession(db, userID, sessionToken, expiresAt)
 	if err != nil {
-		fmt.Println("❌ Error inserting new session:", err)
+		fmt.Println(" Error inserting new session:", err)
 		http.Error(w, "Failed to create session", http.StatusInternalServerError)
 		return
 	}
 
-	// ✅ Set session token as a cookie
+	//  Set session token as a cookie
 	http.SetCookie(w, &http.Cookie{
 		Name:     "session_token",
 		Value:    sessionToken,
@@ -114,9 +114,9 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		Path:     "/",
 	})
 
-	fmt.Println("✅ Login successful for User ID:", userID)
+	fmt.Println(" Login successful for User ID:", userID)
 
-	// ✅ Send success response
+	//  Send success response
 	response := map[string]string{"message": "Login successful."}
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)

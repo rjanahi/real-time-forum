@@ -91,7 +91,7 @@ func ConnectWeb(db *sql.DB) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
-		mainPageHandler(w, r, db) // ✅ This serves the Create Post page
+		mainPageHandler(w, r, db) //  This serves the Create Post page
 	})
 
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
@@ -99,7 +99,7 @@ func ConnectWeb(db *sql.DB) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)
 			return
 		}
-		p.CreatePost(db, w, r) // ✅ This is the API to save posts
+		p.CreatePost(db, w, r) //  This is the API to save posts
 	})
 
 	// likes
@@ -185,7 +185,7 @@ func ConnectWeb(db *sql.DB) {
 			// Call a function to delete the session from the database
 			err := database.DeleteSession(db, cookieINT)
 			if err != nil {
-				fmt.Println("❌ Error deleting session:", err)
+				fmt.Println(" Error deleting session:", err)
 			}
 		}
 

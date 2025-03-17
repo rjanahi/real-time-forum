@@ -30,7 +30,7 @@ func GetComments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	postIDStr := r.URL.Query().Get("post_id")
 	postID, err := strconv.Atoi(postIDStr)
 	if err != nil || postID <= 0 {
-		fmt.Println("❌ Invalid post ID:", postIDStr)
+		fmt.Println(" Invalid post ID:", postIDStr)
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "Invalid post ID"}`, http.StatusBadRequest)
 		return
@@ -38,13 +38,13 @@ func GetComments(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	comments, err := GetCommentsByPostID(db, postID)
 	if err != nil {
-		fmt.Println("❌ Error retrieving comments:", err)
+		fmt.Println(" Error retrieving comments:", err)
 		w.Header().Set("Content-Type", "application/json")
 		http.Error(w, `{"error": "Failed to retrieve comments"}`, http.StatusInternalServerError)
 		return
 	}
 
-	// ✅ Always return a JSON array (never `nil`)
+	//  Always return a JSON array (never `nil`)
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(comments)
 }
@@ -61,7 +61,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	// Ensure the request content type is JSON
 	if contentType != "application/json" {
-		fmt.Println("❌ Error: Expected JSON but received:", contentType)
+		fmt.Println(" Error: Expected JSON but received:", contentType)
 		http.Error(w, "Invalid content type, expected application/json", http.StatusUnsupportedMediaType)
 		return
 	}
@@ -75,7 +75,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Read the request body
 	body, err := io.ReadAll(r.Body)
 	if err != nil {
-		fmt.Println("❌ Error reading request body:", err)
+		fmt.Println(" Error reading request body:", err)
 		http.Error(w, "Invalid request", http.StatusBadRequest)
 		return
 	}
@@ -91,7 +91,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	err = json.Unmarshal(body, &requestData)
 	if err != nil {
-		fmt.Println("❌ JSON Decoding Error:", err)
+		fmt.Println(" JSON Decoding Error:", err)
 		http.Error(w, "Invalid JSON format", http.StatusBadRequest)
 		return
 	}
@@ -111,7 +111,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Insert comment into the database
 	_, _, err = database.InsertComment(db, requestData.PostID, userID, requestData.Content)
 	if err != nil {
-		fmt.Println("❌ Error inserting comment:", err)
+		fmt.Println(" Error inserting comment:", err)
 		http.Error(w, "Failed to create comment", http.StatusInternalServerError)
 		return
 	}
@@ -133,10 +133,10 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
               WHERE c.post_id = ?
               ORDER BY c.created_at ASC`
 
-	fmt.Println("🔍 Fetching comments for Post ID:", postID) // ✅ Debugging log
+	fmt.Println("🔍 Fetching comments for Post ID:", postID) //  Debugging log
 	rows, err := db.Query(query, postID)
 	if err != nil {
-		fmt.Println("❌ Database Query Error:", err)
+		fmt.Println(" Database Query Error:", err)
 		return nil, err
 	}
 	defer rows.Close()
@@ -144,16 +144,16 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Content, &comment.CreatedAt) // ✅ FIXED: Ensure `createdAt` is included
+		err := rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Content, &comment.CreatedAt) //  FIXED: Ensure `createdAt` is included
 		if err != nil {
-			fmt.Println("❌ Row Scanning Error:", err)
+			fmt.Println(" Row Scanning Error:", err)
 			return nil, err
 		}
 		comments = append(comments, comment)
 	}
 
 	if err := rows.Err(); err != nil {
-		fmt.Println("❌ Iteration Error:", err)
+		fmt.Println(" Iteration Error:", err)
 		return nil, err
 	}
 
@@ -162,6 +162,6 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 		comments = []Comment{}
 	}
 
-	fmt.Println("✅ Successfully Retrieved Comments:", comments) // ✅ Debugging log
+	fmt.Println(" Successfully Retrieved Comments:", comments) //  Debugging log
 	return comments, nil
 }
