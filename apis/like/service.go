@@ -35,6 +35,7 @@ func (s *LikesService) RemovePostInteraction(ctx context.Context, userID, postID
 }
 
 func (s *LikesService) InteractWithComment(ctx context.Context, userID, commentID int, isLike bool) error {
+	
 	interaction := Like{
 		UserID:    userID,
 		CommentID: &commentID,

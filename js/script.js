@@ -406,12 +406,13 @@ function loadCommentsForPost(postId) {
             </form>
         </div>
     `;
-
+    
            
             if (comments.length === 0) {
                 commentsList.innerHTML = "<p>No comments available for this post.</p>";
             } else {
                 comments.forEach(comment => {
+                    console.log("✅ Loaded Comment ID:", comment.id);
                     let formattedDate = "Unknown Date";
                     if (comment.created_at) { // Use created_at instead of createdAt
                         try {
@@ -428,9 +429,12 @@ function loadCommentsForPost(postId) {
                     }
                 
                     commentsList.innerHTML += `
-                        <div class="comment">
-                            <p><strong>${comment.username}:</strong> ${comment.content}</p>
-                            <small>Commented on ${formattedDate}</small>
+                        <div id="comment-${comment.id}">
+                            <span class="material-icons" id="likeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, true)"> thumb_up </span>
+                            <span id="likesCountComment${comment.id}">0</span>
+    
+                            <span class="material-icons" id="dislikeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, false)"> thumb_down </span>
+                            <span id="dislikesCountComment${comment.id}">0</span>
                         </div>
                     `;
                 });
@@ -502,6 +506,38 @@ function loadCommentsForPost(postId) {
 
 }
 
+function likeDislikeComment(commentId, isLike) {
+    console.log(`📤 Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
+
+    let likesElement = document.getElementById(`likesCountComment${commentId}`);
+    let dislikesElement = document.getElementById(`dislikesCountComment${commentId}`);
+
+    if (!likesElement || !dislikesElement) {
+        console.error(`❌ Elements for comment ${commentId} not found.`);
+        return;
+    }
+
+    fetch('/likeDislikeComment', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ comment_id: commentId, is_like: isLike }),
+        credentials: 'include'
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log("✅ Like/Dislike Comment Response:", data);
+
+        if (data.message === 'Interaction updated successfully') {
+            likesElement.innerText = `Likes: ${data.likes}`;
+            dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
+        } else {
+            alert(data.error || "Something went wrong.");
+        }
+    })
+    .catch(error => console.error('❌ Error:', error));
+}
+
+
 if(postMyPageButton)postMyPageButton.addEventListener('click',loadMyPosts);
 if(postsPageButton)postsPageButton.addEventListener('click',loadPosts);
 // Assuming categoryButton is defined and is a button element
@@ -533,31 +569,20 @@ function likeDislikePost(postId, isLike) {
         return;
     }
 
-    // ✅ Update UI instantly before waiting for the server response
-    let currentLikes = parseInt(likesElement.innerText.replace("Likes: ", "")) || 0;
-    let currentDislikes = parseInt(dislikesElement.innerText.replace("Dislikes: ", "")) || 0;
-
-    if (isLike) {
-        likesElement.innerText = `Likes: ${currentLikes + 1}`;
-    } else {
-        dislikesElement.innerText = `Dislikes: ${currentDislikes + 1}`;
-    }
-
-    // ✅ Send the request to update on the backend
     fetch('/likeDislikePost', {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ post_id: postId, is_like: isLike }),
+        credentials: 'include'
     })
     .then(response => response.json())
     .then(data => {
         console.log("✅ Like/Dislike Response:", data);
 
-        if (data.message === 'Interaction done successfully') {
-            // ✅ Fetch fresh data after a delay to ensure database update
-            setTimeout(() => getInteractions(postId), 300);
+        if (data.message === 'Interaction updated successfully') {
+            // ✅ Update UI only after getting the correct values from backend
+            likesElement.innerText = `Likes: ${data.likes}`;
+            dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
             alert(data.error || "Something went wrong.");
         }
@@ -566,6 +591,7 @@ function likeDislikePost(postId, isLike) {
         console.error('❌ Error:', error);
     });
 }
+
 
 
 function getInteractions(postId) {

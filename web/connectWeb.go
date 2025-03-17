@@ -22,6 +22,11 @@ type Page struct {
 	Title string
 }
 
+func isAuthenticated(db *sql.DB, r *http.Request) bool {
+    userID, loggedIn := u.ValidateSession(db, r)
+    return loggedIn && userID > 0
+}
+
 func ConnectWeb(db *sql.DB) {
 	// // Optionally clear all tables if needed
 	// if err := clearAllTables(db); err != nil {
@@ -41,7 +46,19 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
-		u.Register(db, w, r)
+		if r.Method == http.MethodGet {
+			// Serve the signup page
+			http.ServeFile(w, r, "templates/signup.html") // Ensure you have a signup.html page
+			return
+		}
+	
+		if r.Method == http.MethodPost {
+			u.Register(db, w, r) // Call the user registration function
+			return
+		}
+	
+		// If the request method is not GET or POST, return an error
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
@@ -70,10 +87,18 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
+		if !isAuthenticated(db, r) {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 		mainPageHandler(w, r, db) // ✅ This serves the Create Post page
 	})
 
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
+		if !isAuthenticated(db, r) {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+			return
+		}
 		p.CreatePost(db, w, r) // ✅ This is the API to save posts
 	})
 
@@ -84,7 +109,9 @@ func ConnectWeb(db *sql.DB) {
 	http.HandleFunc("/likeDislikePost", func(w http.ResponseWriter, r *http.Request) {
 		likesController.LikeDislikePost(w, r, db)
 	})
-	http.HandleFunc("/likeDislikeComment", likesController.InteractWithComment)
+	http.HandleFunc("/likeDislikeComment", func(w http.ResponseWriter, r *http.Request) {
+		likesController.InteractWithComment(w, r, db)
+	})
 	http.HandleFunc("/getInteractions", likesController.GetInteractions)
 
 	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
