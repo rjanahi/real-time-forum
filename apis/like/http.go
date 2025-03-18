@@ -33,14 +33,6 @@ func (c *LikesController) LikeDislikePost(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// token, err := r.Cookie("session_id")
-	// if err != nil {
-	// 	fmt.Println(" Error: No session token found.")
-	// 	w.Header().Set("Content-Type", "application/json")
-	// 	http.Error(w, `{"error": "Unauthorized. Please log in."}`, http.StatusUnauthorized)
-	// 	return
-	// }
-
 	userID, loggedIn := u.ValidateSession(db, r)
 	if !loggedIn {
 		http.Error(w, "Unauthorized. Please log in.", http.StatusUnauthorized)
@@ -122,21 +114,21 @@ func (c *LikesController) InteractWithComment(w http.ResponseWriter, r *http.Req
 	// Check if interaction exists
 	like, err := c.s.CheckCommentInteractions(r.Context(), userID, *req.CommentID)
 	if errors.Is(err, sql.ErrNoRows) {
-		fmt.Println("➕ Storing new interaction for comment", *req.CommentID)
+		fmt.Println(" Storing new interaction for comment", *req.CommentID)
 		if err = c.s.InteractWithComment(r.Context(), userID, *req.CommentID, req.IsLike); err != nil {
 			fmt.Println(" Error storing interaction:", err)
 			http.Error(w, "Failed to like/dislike comment", http.StatusInternalServerError)
 			return
 		}
 	} else if like.IsLike == req.IsLike {
-		fmt.Println("➖ Removing interaction for comment", *req.CommentID)
+		fmt.Println(" Removing interaction for comment", *req.CommentID)
 		if err = c.s.RemoveCommentInteraction(r.Context(), userID, *req.CommentID); err != nil {
 			fmt.Println(" Error removing interaction:", err)
 			http.Error(w, "Failed to remove interaction", http.StatusInternalServerError)
 			return
 		}
 	} else {
-		fmt.Println("🔄 Switching Like to Dislike (or vice versa)")
+		fmt.Println(" Switching Like to Dislike (or vice versa)")
 		if err = c.s.RemoveCommentInteraction(r.Context(), userID, *req.CommentID); err != nil {
 			fmt.Println(" Error removing previous interaction:", err)
 			http.Error(w, "Failed to remove previous interaction", http.StatusInternalServerError)
@@ -159,7 +151,7 @@ func (c *LikesController) InteractWithComment(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fmt.Printf("📊 Updated Counts -> Likes: %d, Dislikes: %d\n", updatedCounts.Likes, updatedCounts.Dislikes)
+	fmt.Printf(" Updated Counts -> Likes: %d, Dislikes: %d\n", updatedCounts.Likes, updatedCounts.Dislikes)
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(map[string]interface{}{

@@ -171,7 +171,7 @@ func GetPostByPostID(db *sql.DB, postID int) ([]map[string]interface{}, error) {
 			"username":   username,
 			"title":      title,
 			"content":    content,
-			"categories": categories, // ✅ Include categories
+			"categories": categories, //  Include categories
 			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
 		}
 		posts = append(posts, post)

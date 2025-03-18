@@ -390,10 +390,10 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => response.json())
         .then(parsedResponse => {
-            console.log("📥 Server Response:", parsedResponse);
+            console.log(" Server Response:", parsedResponse);
     
             if (parsedResponse.error) {
-                console.error("❌ Server Error:", parsedResponse.error);
+                console.error(" Server Error:", parsedResponse.error);
                 commentsSection.innerHTML = `<p>Error loading comments: ${parsedResponse.error}</p>`;
                 return;
             }
@@ -406,14 +406,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 <div class="comment-post">
                     <h2>${post.title}</h2>
                     <p>${post.content}</p>
-                    <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+                    <small>Posted by <strong>${post.username}</strong> on ${post.createdAt} - ${post.categories.join(', ')} </small>
                 </div>
                 <div class="container-about">
                     <h2>Comments</h2>
                     <div id="commentsList"></div>
                     <form id="commentForm">
-                        <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br><br>
-                        <input type="hidden" id="postID" value="${postId}"><br><br>
+                        <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br>
+                        <input type="hidden" id="postID" value="${postId}">
                         <button id="sendCommentButton" class="button-main" type="submit">Post Comment</button>
                     </form>
                 </div>
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 commentsList.innerHTML = "<p>No comments available for this post.</p>";
             } else {
                 comments.forEach(comment => {
-                    console.log("✅ Loaded Comment ID:", comment.id);
+                    console.log(" Loaded Comment ID:", comment.id);
     
                     let formattedDate = new Date(comment.created_at).toLocaleString();
     
@@ -441,27 +441,34 @@ document.addEventListener('DOMContentLoaded', () => {
                         </div>
                     `;
     
-                    // ✅ Fetch and update likes/dislikes for each comment
+                    //  Fetch and update likes/dislikes for each comment
                     getInteractions(null, comment.id);
                 });
             }
     
+            
             showSection(commentsSection, `/comment/${postId}`);
 
+            if(document.getElementById("return-to-posts")){
+                document.getElementById("return-to-posts").addEventListener('click', () => {
+                showSection(postPageSection, `/posts`);
+                loadPosts(); //  Ensure posts are loaded
+            });}
+
             document.getElementById('commentForm').addEventListener('submit', function (event) {
-                event.preventDefault();  // ✅ Prevent default form submission
+                event.preventDefault();  //  Prevent default form submission
     
                 const commentText = document.getElementById("commentText").value.trim();
                 const postID = document.getElementById("postID").value;
     
                 if (!commentText) {
-                    console.log("❌ Comment cannot be empty.");
+                    console.log(" Comment cannot be empty.");
                     return;
                 }
     
                 const requestBody = JSON.stringify({ post_id: parseInt(postID), content: commentText });
     
-                console.log("📤 Sending JSON Data:", requestBody);
+                console.log(" Sending JSON Data:", requestBody);
     
                 fetch("/create-comment", {
                     method: "POST",
@@ -471,24 +478,24 @@ document.addEventListener('DOMContentLoaded', () => {
                 })
                 .then(response => response.json())
                 .then(data => {
-                    console.log("✅ Server Response:", data);
+                    console.log(" Server Response:", data);
     
                     if (data.success) {
-                        // ✅ Clear input field
+                        //  Clear input field
                         document.getElementById("commentText").value = "";
     
-                        // ✅ Reload comments without redirecting
+                        //  Reload comments without redirecting
                         loadCommentsForPost(postID);
                     } else {
-                        console.log("❌ Error: " + data.message);
+                        console.log(" Error: " + data.message);
                     }
                 })
-                .catch(error => console.error("❌ Error posting comment:", error));
+                .catch(error => console.error(" Error posting comment:", error));
             });
             
         })
         .catch(error => {
-            console.error("❌ Error loading comments:", error);
+            console.error(" Error loading comments:", error);
             commentsSection.innerHTML = "<p>Failed to load comments.</p>";
         });
     }
@@ -497,7 +504,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function likeDislikeComment(commentId, isLike) {
-    console.log(`📤 Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
+    console.log(` Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
 
     let likesElement = document.getElementById(`likesCountComment${commentId}`);
     let dislikesElement = document.getElementById(`dislikesCountComment${commentId}`);
@@ -574,22 +581,22 @@ function getInteractions(postId, commentId = null) {
     })
     .then(response => response.json())
     .then(data => {
-        console.log("✅ Updated Interaction Data:", data);
+        console.log(" Updated Interaction Data:", data);
 
         if (!data || typeof data.likes === "undefined" || typeof data.dislikes === "undefined") {
-            console.error("❌ Invalid data received:", data);
+            console.error(" Invalid data received:", data);
             return;
         }
 
         if (commentId) {
-            // ✅ Update comment likes/dislikes
+            //  Update comment likes/dislikes
             let likesElement = document.getElementById(`likesCountComment${commentId}`);
             let dislikesElement = document.getElementById(`dislikesCountComment${commentId}`);
 
             if (likesElement) likesElement.innerText = `Likes: ${data.likes}`;
             if (dislikesElement) dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
-            // ✅ Update post likes/dislikes
+            //  Update post likes/dislikes
             let likesElement = document.getElementById(`likesCountPost${postId}`);
             let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
 
@@ -597,7 +604,7 @@ function getInteractions(postId, commentId = null) {
             if (dislikesElement) dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         }
     })
-    .catch(error => console.error('❌ Error fetching likes/dislikes:', error));
+    .catch(error => console.error(' Error fetching likes/dislikes:', error));
 }
 
 

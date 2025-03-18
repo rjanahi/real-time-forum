@@ -57,7 +57,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 
 	// Log received Content-Type
 	contentType := r.Header.Get("Content-Type")
-	fmt.Println("📥 Received Content-Type:", contentType)
+	fmt.Println(" Received Content-Type:", contentType)
 
 	// Ensure the request content type is JSON
 	if contentType != "application/json" {
@@ -81,7 +81,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Log the raw JSON request body
-	fmt.Println("📥 Received JSON:", string(body))
+	fmt.Println(" Received JSON:", string(body))
 
 	// Parse JSON request
 	var requestData struct {
@@ -96,7 +96,7 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	fmt.Printf("🔍 Parsed Comment Request: PostID: %d, Content: '%s'\n", requestData.PostID, requestData.Content)
+	fmt.Printf(" Parsed Comment Request: PostID: %d, Content: '%s'\n", requestData.PostID, requestData.Content)
 
 	// Validate inputs
 	if requestData.Content == "" {
@@ -133,7 +133,7 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
               WHERE c.post_id = ?
               ORDER BY c.created_at ASC`
 
-	fmt.Println("🔍 Fetching comments for Post ID:", postID) //  Debugging log
+	fmt.Println(" Fetching comments for Post ID:", postID) //  Debugging log
 	rows, err := db.Query(query, postID)
 	if err != nil {
 		fmt.Println(" Database Query Error:", err)

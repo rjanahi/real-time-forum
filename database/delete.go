@@ -44,7 +44,7 @@ func DeleteLike(db *sql.DB, likeID int) error {
 }
 
 func DeleteSession(db *sql.DB, sessionID int) error {
-	fmt.Println("✅ Deleting session with ID:", sessionID)
+	fmt.Println(" Deleting session with ID:", sessionID)
 	query := `DELETE FROM sessions WHERE id = ?`
 	_, err := db.Exec(query, sessionID)
 	if err != nil {
