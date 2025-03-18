@@ -17,31 +17,33 @@ func NewLikesRepository(db *sql.DB) *LikesRepository {
 }
 
 func (r *LikesRepository) StoreInteraction(ctx context.Context, interaction like.Like) error {
-	var postID interface{}
-	if interaction.PostID != nil {
-		postID = *interaction.PostID
-	} else {
-		postID = nil
-	}
+    var postID sql.NullInt32
+    var commentID sql.NullInt32
 
-	var commentID interface{}
-	if interaction.CommentID != nil {
-		commentID = *interaction.CommentID
-	} else {
-		commentID = nil
-	}
+    if interaction.PostID != nil {
+        postID = sql.NullInt32{Int32: int32(*interaction.PostID), Valid: true}
+    } else {
+        postID = sql.NullInt32{Valid: false}
+    }
 
-	query := `
+    if interaction.CommentID != nil {
+        commentID = sql.NullInt32{Int32: int32(*interaction.CommentID), Valid: true}
+    } else {
+        commentID = sql.NullInt32{Valid: false}
+    }
+
+    query := `
         INSERT INTO likes (user_id, post_id, comment_id, is_like, created_at)
         VALUES ($1, $2, $3, $4, datetime('now'))
     `
-	_, err := r.db.ExecContext(ctx, query, interaction.UserID, postID, commentID, interaction.IsLike)
-	if err != nil {
-		return fmt.Errorf("store interaction failed: %w", err)
-	}
+    _, err := r.db.ExecContext(ctx, query, interaction.UserID, postID, commentID, interaction.IsLike)
+    if err != nil {
+        return fmt.Errorf("store interaction failed: %w", err)
+    }
 
-	return nil
+    return nil
 }
+
 
 func (r *LikesRepository) RemovePostInteraction(ctx context.Context, userID, postID int) error {
 	query := `

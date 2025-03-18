@@ -382,68 +382,69 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-function loadCommentsForPost(postId) {
-    fetch(`/comments?post_id=${postId}`, {
-        method: 'GET',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
-    })
-    .then(response => response.text()) // Read response as text first
-    .then(text => {
-        console.log(" Raw Response:", text);
-        try {
-            const parsedResponse = JSON.parse(text);
-
-            // Handle case where response contains an error
+    function loadCommentsForPost(postId) {
+        fetch(`/comments?post_id=${postId}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+        .then(response => response.json())
+        .then(parsedResponse => {
+            console.log("📥 Server Response:", parsedResponse);
+    
+            // Handle server errors
             if (parsedResponse.error) {
-                console.error(" Server Error:", parsedResponse.error);
+                console.error("❌ Server Error:", parsedResponse.error);
                 commentsSection.innerHTML = `<p>Error loading comments: ${parsedResponse.error}</p>`;
                 return;
             }
-            const post = parsedResponse.post; // Accessing post from the parsed response
-        const comments = parsedResponse.comments; // Accessing comments from the parsed response
-        commentsSection.innerHTML = `
-        <button id="return-to-posts" class="return-button">Return</button>
-        <div class="comment-post">
-            <h2>${post.title}</h2>
-            <p>${post.content}</p>
-            <small>Posted by <strong>${post.username}</strong> on ${post.createdAt} - ${post.categories.join(', ')} </small>
-        </div>
-        <div class="container-about">
-            <h2>Comments</h2>
-            <div id="commentsList"></div>
-            <form id="commentForm">
-                <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br><br>
-                <input type="hidden" id="postID" value="${postId}"><br><br>
-                <button id="sendCommentButton" class="button-main" type="submit">Post Comment</button>
-            </form>
-        </div>
-    `;
     
-           
+            // Extract post and comments
+            const post = parsedResponse.post;
+            const comments = parsedResponse.comments;
+    
+            // ✅ Update the full comment section (only when switching posts)
+            commentsSection.innerHTML = `
+                <button id="return-to-posts" class="return-button">Return</button>
+                <div class="comment-post">
+                    <h2>${post.title}</h2>
+                    <p>${post.content}</p>
+                    <small>Posted by <strong>${post.username}</strong> on ${post.createdAt}</small>
+                </div>
+                <div class="container-about">
+                    <h2>Comments</h2>
+                    <div id="commentsList"></div> <!-- This holds the comments only -->
+                    <form id="commentForm">
+                        <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br><br>
+                        <input type="hidden" id="postID" value="${postId}"><br><br>
+                        <button id="sendCommentButton" class="button-main" type="submit">Post Comment</button>
+                    </form>
+                </div>
+            `;
+    
+            // ✅ Get the newly created commentsList div
+            const commentsList = document.getElementById("commentsList");
+    
+            // ✅ Populate comments
             if (comments.length === 0) {
                 commentsList.innerHTML = "<p>No comments available for this post.</p>";
             } else {
                 comments.forEach(comment => {
-                    console.log(" Loaded Comment ID:", comment.id);
+                    console.log("✅ Loaded Comment ID:", comment.id);
+    
                     let formattedDate = "Unknown Date";
-                    if (comment.created_at) { // Use created_at instead of createdAt
+                    if (comment.created_at) {
                         try {
-                            const date = new Date(comment.created_at); // Correctly parse the created_at field
-                            // Check if the date is valid
-                            if (!isNaN(date)) {
-                                formattedDate = date.toLocaleString(); // Formats date and time
-                            } else {
-                                console.error(" Invalid Date:", comment.created_at);
-                            }
+                            const date = new Date(comment.created_at);
+                            formattedDate = isNaN(date) ? "Invalid Date" : date.toLocaleString();
                         } catch (error) {
-                            console.error(" Error parsing date:", error);
+                            console.error("❌ Error parsing date:", error);
                         }
                     }
-                
+    
                     commentsList.innerHTML += `
                         <div id="comment-${comment.id}">
-                         <p><strong>${comment.username}:</strong> ${comment.content}
+                            <p><strong>${comment.username}:</strong> ${comment.content}
                             <small>${formattedDate}</small></p>
                             <span class="material-icons" id="likeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, true)"> thumb_up </span>
                             <span id="likesCountComment${comment.id}">0</span>
@@ -453,72 +454,50 @@ function loadCommentsForPost(postId) {
                     `;
                 });
             }
-
-            //  Stay on the comments page
+    
+            // ✅ Show the comment section
             showSection(commentsSection, `/comment/${postId}`);
-
-            if(document.getElementById("return-to-posts")){
-                document.getElementById("return-to-posts").addEventListener('click', () => {
+    
+            // ✅ Attach event listener for returning to posts
+            document.getElementById("return-to-posts").addEventListener('click', () => {
                 showSection(postPageSection, `/posts`);
-                loadPosts(); //  Ensure posts are loaded
+                loadPosts(); // Ensure posts are loaded
             });
-            }
-            
-            
-
-            // Attach the event listener for submitting a comment
+    
+            // ✅ Attach event listener for submitting a comment
             document.getElementById('commentForm').addEventListener('submit', function (event) {
                 event.preventDefault();  // Prevent default form submission
-        
-                const commentText = document.querySelector("#commentText").value.trim();
-                const postID = document.querySelector("#postID").value;
-        
+    
+                const commentText = document.getElementById("commentText").value.trim();
                 if (!commentText) {
-                    console.log("Comment cannot be empty.");
+                    console.log("❌ Comment cannot be empty.");
                     return;
                 }
-        
-                const requestBody = JSON.stringify({ post_id: parseInt(postID), content: commentText });
-        
+    
+                const requestBody = JSON.stringify({ post_id: parseInt(postId), content: commentText });
                 console.log("📤 Sending JSON Data:", requestBody);
-        
+    
                 fetch("/create-comment", {
                     method: "POST",
-                    headers: { 
-                        "Accept": "application/json",  //  Ensure JSON response
-                        "Content-Type": "application/json"  //  Ensure JSON request
-                    },
+                    headers: { "Content-Type": "application/json" },
                     credentials: "include",
                     body: requestBody
                 })
-                .then(response => {
-                    console.log(" Response Headers:", response.headers.get("Content-Type"));
-                    return response.json();
-                })
+                .then(response => response.json())
                 .then(data => {
-                    console.log(" Server Response:", data);
-                    console.log(data.success ? "Comment posted successfully!" : "Error: " + data.message);
-
-                    //  Reload comments without redirecting away
-                    if (data.success) loadCommentsForPost(postID);
-                    
+                    console.log("✅ Server Response:", data);
+                    if (data.success) loadCommentsForPost(postId); // Reload comments
                 })
-                .catch(error => console.error(" Error posting comment:", error));
+                .catch(error => console.error("❌ Error posting comment:", error));
             });
-            
-
-        } catch (error) {
-            console.error(" JSON Parsing Error:", error);
+        })
+        .catch(error => {
+            console.error("❌ Error loading comments:", error);
             commentsSection.innerHTML = "<p>Failed to load comments.</p>";
-        }
-    })
-    .catch(error => {
-        console.error(" Error loading comments:", error);
-        commentsSection.innerHTML = "<p>Failed to load comments.</p>";
-    });
-    
-
-}
+        });
+    }
+       
+});
 
 function likeDislikeComment(commentId, isLike) {
     console.log(`📤 Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
@@ -550,9 +529,6 @@ function likeDislikeComment(commentId, isLike) {
     })
     .catch(error => console.error(' Error:', error));
 }
-    
-});
-
 
 function likeDislikePost(postId, isLike) {
     let likesElement = document.getElementById(`likesCountPost${postId}`);
