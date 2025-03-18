@@ -418,6 +418,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     </form>
                 </div>
             `;
+
     
             const commentsList = document.getElementById("commentsList");
     
@@ -446,6 +447,45 @@ document.addEventListener('DOMContentLoaded', () => {
             }
     
             showSection(commentsSection, `/comment/${postId}`);
+
+            document.getElementById('commentForm').addEventListener('submit', function (event) {
+                event.preventDefault();  // ✅ Prevent default form submission
+    
+                const commentText = document.getElementById("commentText").value.trim();
+                const postID = document.getElementById("postID").value;
+    
+                if (!commentText) {
+                    console.log("❌ Comment cannot be empty.");
+                    return;
+                }
+    
+                const requestBody = JSON.stringify({ post_id: parseInt(postID), content: commentText });
+    
+                console.log("📤 Sending JSON Data:", requestBody);
+    
+                fetch("/create-comment", {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    credentials: "include",
+                    body: requestBody
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log("✅ Server Response:", data);
+    
+                    if (data.success) {
+                        // ✅ Clear input field
+                        document.getElementById("commentText").value = "";
+    
+                        // ✅ Reload comments without redirecting
+                        loadCommentsForPost(postID);
+                    } else {
+                        console.log("❌ Error: " + data.message);
+                    }
+                })
+                .catch(error => console.error("❌ Error posting comment:", error));
+            });
+            
         })
         .catch(error => {
             console.error("❌ Error loading comments:", error);
