@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	u "forum/apis/user"
 	database "forum/database"
 	"net/http"
 )
@@ -23,6 +24,34 @@ func GetPostbyCategory(db *sql.DB, w http.ResponseWriter, r *http.Request, categ
 		http.Error(w, "Failed to retrieve posts from category", http.StatusInternalServerError)
 		return
 	}
+
+	if len(posts) < 1 {
+		posts = []map[string]interface{}{}
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts)
+	} else {
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(posts)
+	}
+
+}
+
+func GetPostbyIsLiked(db *sql.DB, w http.ResponseWriter, r *http.Request) {
+	// Validate session and get user ID
+	userID, loggedIn := u.ValidateSession(db, r)
+	if !loggedIn {
+		http.Error(w, "Unauthorized. Please log in.", http.StatusUnauthorized)
+		return
+	}
+fmt.Println(userID)
+
+	posts, err := database.GetPostIfLiked(db, userID)
+		if err != nil {
+			fmt.Println("Error checking if post is liked:", err)
+			http.Error(w, "Failed to check if post is liked", http.StatusInternalServerError)
+			return
+		}
+
 
 	if len(posts) < 1 {
 		posts = []map[string]interface{}{}

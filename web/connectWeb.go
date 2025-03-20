@@ -23,8 +23,8 @@ type Page struct {
 }
 
 func isAuthenticated(db *sql.DB, r *http.Request) bool {
-    userID, loggedIn := u.ValidateSession(db, r)
-    return loggedIn && userID > 0
+	userID, loggedIn := u.ValidateSession(db, r)
+	return loggedIn && userID > 0
 }
 
 func ConnectWeb(db *sql.DB) {
@@ -47,29 +47,35 @@ func ConnectWeb(db *sql.DB) {
 
 	http.HandleFunc("/signup", func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == http.MethodGet {
-			// Serve the signup page
-			http.ServeFile(w, r, "templates/signup.html") // Ensure you have a signup.html page
-			return
+			mainPageHandler(w, r, db)
 		}
-	
+
 		if r.Method == http.MethodPost {
 			u.Register(db, w, r) // Call the user registration function
 			return
-		
-	
-		// If the request method is not GET or POST, return an error
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		}
+
 	})
 
 	http.HandleFunc("/login", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet {
+			mainPageHandler(w, r, db)
+		}
 		u.Login(db, w, r) // Call the Login function from Register.go
 	})
 
 	http.HandleFunc("/get-posts", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			mainPageHandler(w, r, db)
+		}
+
 		p.GetPosts(db, w, r)
 	})
 
 	http.HandleFunc("/get-myPosts", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodPost {
+			mainPageHandler(w, r, db)
+		}
 		userID, loggedIn := u.ValidateSession(db, r)
 		if !loggedIn {
 			http.Error(w, "Unauthorized. Please log in.", http.StatusUnauthorized)
@@ -154,6 +160,10 @@ func ConnectWeb(db *sql.DB) {
 	http.HandleFunc("/category/", func(w http.ResponseWriter, r *http.Request) {
 		category := strings.TrimPrefix(r.URL.Path, "/category/")
 		fmt.Println(category)
+		if category == "Liked" {
+			p.GetPostbyIsLiked(db, w, r)
+			return
+		}
 		p.GetPostbyCategory(db, w, r, category)
 	})
 

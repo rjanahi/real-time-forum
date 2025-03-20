@@ -85,7 +85,7 @@ func GetUsernameUsingID(db *sql.DB, id int) (string, error) {
 func GetPostIDbyUserID(db *sql.DB, userID int) (int, error) {
 	query := `SELECT id FROM posts WHERE user_id = ?`
 	var id int
-	err := db.QueryRow(query, userID).Scan(id)
+	err := db.QueryRow(query, userID).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			// No rows found for the given username
@@ -184,7 +184,7 @@ func GetPostsByUserID(db *sql.DB, userID int) ([]map[string]interface{}, error) 
 	SELECT p.id, u.username, p.title, p.content, p.created_at 
 	FROM posts p
 	JOIN users u ON p.user_id = u.id 
-	WHERE p.user_id = ? 
+	WHERE u.id = ? 
 	ORDER BY p.created_at DESC`
 
 	rows, err := db.Query(query, userID)
@@ -283,4 +283,48 @@ func GetCategoryIDByName(db *sql.DB, category string) (int, error) {
 	}
 
 	return categoryID, nil
+}
+
+func GetPostIfLiked(db *sql.DB, userID int) ([]map[string]interface{}, error) {
+	query := `
+	SELECT p.id, u.username, p.title, p.content, p.created_at 
+	FROM posts p
+	JOIN users u ON u.id = p.user_id
+	JOIN likes l ON l.post_id = p.id AND l.is_like = 1
+	WHERE l.user_id = ?;`
+
+	rows, err := db.Query(query, userID)
+	if err != nil {
+		return nil, fmt.Errorf("error querying posts: %w", err)
+	}
+	defer rows.Close()
+
+	var posts []map[string]interface{}
+	for rows.Next() {
+		var postID int
+		var username, title, content string
+		var createdAt time.Time
+
+		err := rows.Scan(&postID, &username, &title, &content, &createdAt)
+		if err != nil {
+			return nil, fmt.Errorf("error scanning post: %w", err)
+		}
+		categories, err := GetCategoriesByPostID(db, postID)
+		if err != nil {
+			fmt.Println("Error retrieving categories:", err)
+			return nil, err
+		}
+
+		post := map[string]interface{}{
+			"id":         postID,
+			"username":   username,
+			"title":      title,
+			"content":    content,
+			"categories": categories,
+			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
+		}
+		posts = append(posts, post)
+	}
+
+	return posts, nil
 }
