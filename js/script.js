@@ -150,6 +150,8 @@ document.addEventListener('DOMContentLoaded', () => {
                     showSection(postPageSection, '/posts'); // Navigate to posts section
                     loadPosts(); // Load posts after navigating to the posts section
                 } else {
+                    const error =  document.getElementById("logerror")
+                    error.innerHTML = data.message;
                     checkSession(); // Update UI based on session status
                     loginForm.reset();
                 }
@@ -241,8 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                         <br><br>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); "> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); "> thumb_down </span>
 <small>
                         <span id="likesCountPost${post.id}">Likes: 0</span>
                         <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
@@ -292,12 +294,13 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                         <br><br>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span>
-<small>
-                        <span id="likesCountPost${post.id}">Likes: 0</span>
-                        <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
-                    </small>                    </div>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true);"> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false);"> thumb_down </span>
+                        <small>
+                            <span id="likesCountPost${post.id}">Likes: 0</span>
+                            <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
+                        </small>                    
+                    </div>
                 `;
                 postContainer.appendChild(postElement);
                  //  Fetch updated likes/dislikes for this post
@@ -363,8 +366,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         <button class="commentsButton button-main" data-post-id="${post.id}">See comments</button>
                         <br><br>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true); this.style.color = 'green'"> thumb_up </span>
-                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false); this.style.color = 'red'"> thumb_down </span><small>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, true);"> thumb_up </span>
+                        <span class="material-icons" onclick="likeDislikePost(${post.id}, false);"> thumb_down </span><small>
                         <span id="likesCountPost${post.id}">Likes: 0</span>
                         <span id="dislikesCountPost${post.id}">Dislikes: 0</span></small>
                         </div>
@@ -410,7 +413,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 </div>
                 <div class="container-about">
                     <h2>Comments</h2>
-                    <div id="commentsList"></div>
+                    <div id="commentsList"></div><br><br>
                     <form id="commentForm">
                         <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br>
                         <input type="hidden" id="postID" value="${postId}">

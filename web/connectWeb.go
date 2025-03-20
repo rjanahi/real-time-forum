@@ -55,7 +55,7 @@ func ConnectWeb(db *sql.DB) {
 		if r.Method == http.MethodPost {
 			u.Register(db, w, r) // Call the user registration function
 			return
-		}
+		
 	
 		// If the request method is not GET or POST, return an error
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
