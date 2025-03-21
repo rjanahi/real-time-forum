@@ -152,26 +152,39 @@ export function loadAndInitChat(userId) {
 }
 
 function fetchUserList() {
-    fetch("/get-users", { credentials: 'include' })
-        .then(res => res.json())
-        .then(users => {
-            const userList = document.getElementById("userList");
-            userList.innerHTML = '';
-            users.forEach(user => {
-                if (user.id !== loggedInUserId) {
-                    const li = document.createElement("li");
-                    li.dataset.userId = user.id;
-                    li.classList.add(user.online ? 'online' : 'offline');
-                    li.innerHTML = `
-                        <span class="username">${user.username}</span>
-                        <span class="status-dot ${user.online ? 'online' : 'offline'}"></span>
-                    `;
-                    li.onclick = () => openChatWith(user.id, user.username);
-                    userList.appendChild(li);
-                }
-            });
-        });
+  fetch("/get-users", { credentials: 'include' })
+      .then(res => res.json())
+      .then(users => {
+          const userList = document.getElementById("userList");
+          userList.innerHTML = '';
+
+          users.forEach(user => {
+              if (user.id !== loggedInUserId) {
+                  const li = document.createElement("li");
+                  li.dataset.userId = user.id;
+                  li.classList.add("user-item");
+
+                  // ✅ Create username span
+                  const usernameSpan = document.createElement("span");
+                  usernameSpan.textContent = user.username;
+
+                  // ✅ Create status dot
+                  const statusDot = document.createElement("span");
+                  statusDot.classList.add("status-dot");
+                  statusDot.classList.add(user.online ? "online" : "offline");
+
+                  // ✅ Append elements
+                  li.appendChild(usernameSpan);
+                  li.appendChild(statusDot);
+                  li.onclick = () => openChatWith(user.id, user.username);
+
+                  userList.appendChild(li);
+              }
+          });
+      })
+      .catch(err => console.error("Failed to fetch users:", err));
 }
+
 
 function openChatWith(userId, username) {
     selectedUserId = userId;

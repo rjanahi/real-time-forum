@@ -261,7 +261,7 @@ func ConnectWeb(db *sql.DB) {
 			return
 		}
 	
-		onlineIDs := chatHub.GetOnlineUserIDs()
+		onlineIDs := chatHub.GetOnlineUserIDs() // ✅ Get list of online users
 		onlineSet := make(map[int]bool)
 		for _, id := range onlineIDs {
 			onlineSet[id] = true
@@ -282,7 +282,7 @@ func ConnectWeb(db *sql.DB) {
 				users = append(users, map[string]interface{}{
 					"id":       id,
 					"username": username,
-					"online":   onlineSet[id],
+					"online":   onlineSet[id], // ✅ Add online status
 				})
 			}
 		}
@@ -290,6 +290,7 @@ func ConnectWeb(db *sql.DB) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(users)
 	})
+	
 	
 
 	fmt.Println("Listening on: http://localhost:8888/")

@@ -386,6 +386,37 @@ input[type="submit"]:hover {
     background-color: #ccc;
   }
 
+  /* User list styling */
+.user-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid #ddd;
+}
+
+.user-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* Status dot styles */
+.status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    display: inline-block;
+    margin-left: 10px;
+}
+
+.online {
+    background-color: green; /* ✅ Green dot for online users */
+}
+
+.offline {
+    background-color: gray; /* ⚪ Gray dot for offline users */
+}
+
   /* Style for online user highlight in sidebar */
 .chat-sidebar li.online {
     font-weight: bold;
