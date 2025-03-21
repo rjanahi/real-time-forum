@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strings"
 
+	"forum/apis/chat"
 	"forum/apis/like"
 	likerepo "forum/apis/like/repo"
 	p "forum/apis/post"
@@ -203,6 +204,93 @@ func ConnectWeb(db *sql.DB) {
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
 	})
+
+	chatHub := chat.NewHub(db)
+	go chatHub.Run()
+
+	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
+		chat.ServeWs(chatHub, w, r)
+	})
+
+	http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {
+		userID, loggedIn := u.ValidateSession(db, r)
+		if !loggedIn {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+
+		withIDStr := r.URL.Query().Get("with")
+		offsetStr := r.URL.Query().Get("offset")
+		withID, err := strconv.Atoi(withIDStr)
+		if err != nil || withID <= 0 {
+			http.Error(w, "Invalid 'with' parameter", http.StatusBadRequest)
+			return
+		}
+		offset, _ := strconv.Atoi(offsetStr)
+
+		query := `SELECT sender_id, receiver_id, content, created_at FROM messages
+	          WHERE (sender_id = ? AND receiver_id = ?) OR (sender_id = ? AND receiver_id = ?)
+	          ORDER BY created_at DESC LIMIT 10 OFFSET ?`
+		rows, err := db.Query(query, userID, withID, withID, userID, offset)
+		if err != nil {
+			http.Error(w, "Database error", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+
+		var messages []chat.Message
+		for rows.Next() {
+			var m chat.Message
+			if err := rows.Scan(&m.From, &m.To, &m.Content, &m.Timestamp); err == nil {
+				messages = append(messages, m)
+			}
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if messages == nil {
+			messages = []chat.Message{} // ✅ Ensure an empty array is sent instead of `null`
+		}
+		json.NewEncoder(w).Encode(messages)
+		
+	})
+
+	http.HandleFunc("/get-users", func(w http.ResponseWriter, r *http.Request) {
+		_, loggedIn := u.ValidateSession(db, r)
+		if !loggedIn {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+	
+		onlineIDs := chatHub.GetOnlineUserIDs()
+		onlineSet := make(map[int]bool)
+		for _, id := range onlineIDs {
+			onlineSet[id] = true
+		}
+	
+		rows, err := db.Query(`SELECT id, username FROM users`)
+		if err != nil {
+			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+			return
+		}
+		defer rows.Close()
+	
+		var users []map[string]interface{}
+		for rows.Next() {
+			var id int
+			var username string
+			if err := rows.Scan(&id, &username); err == nil {
+				users = append(users, map[string]interface{}{
+					"id":       id,
+					"username": username,
+					"online":   onlineSet[id],
+				})
+			}
+		}
+	
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(users)
+	})
+	
 
 	fmt.Println("Listening on: http://localhost:8888/")
 	if err := http.ListenAndServe("0.0.0.0:8888", nil); err != nil {

@@ -21,6 +21,7 @@ const loginSignUpButton = document.getElementById('signUpButtonLogin');
 const logoutPostButton = document.getElementById('logoutPostButton');
 const postMyPageButton = document.getElementById('postMyPageButton');
 const categoryButtons = document.querySelectorAll('#categoryOptions .button-side');
+const openChatButton = document.getElementById('openChatButton');
 
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
@@ -68,6 +69,12 @@ document.addEventListener('DOMContentLoaded', () => {
                 showSection(mainSection, '/'); // Redirect to main page
             })
             .catch(error => console.error("Logout failed:", error));
+        });
+    }
+    if (openChatButton) {
+        openChatButton.addEventListener('click', () => {
+            showSection(document.getElementById('chatSection'), '/chat');
+            loadAndInitChat(data.userID); // Your custom chat setup function
         });
     }
     categoryButtons.forEach(button => {
@@ -245,7 +252,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         <br><br>
                         <span class="material-icons" onclick="likeDislikePost(${post.id}, true); "> thumb_up </span>
                         <span class="material-icons" onclick="likeDislikePost(${post.id}, false); "> thumb_down </span>
-<small>
+                    <small>
                         <span id="likesCountPost${post.id}">Likes: 0</span>
                         <span id="dislikesCountPost${post.id}">Dislikes: 0</span>
                     </small>                    </div>
@@ -623,9 +630,9 @@ function checkSession() {
             const logoutButton = document.getElementById('logoutButton');
             const postsButton = document.getElementById('postsButton');
 
-            if (data.loggedIn) {
+            if (data.loggedIn && typeof data.userID !== "undefined") {
                 console.log(" User is logged in:", data.userID);
-
+                loadAndInitChat(data.userID);
                 //  Hide sign-up & login buttons
                 if (signUpButton) signUpButton.style.display = "none";
                 if (logInButton) logInButton.style.display = "none";

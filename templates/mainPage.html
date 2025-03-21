@@ -6,6 +6,7 @@
     <link rel="stylesheet" type="text/css" href="../style/style.css">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <script src="../js/script.js" defer></script>
+    <script type="module" src="../js/chat.js"></script>
     <title>Welcome Page</title>
 </head>
 
@@ -109,6 +110,7 @@
           
                 <button id="postsPageButton" class="button-side">Posts</button><br>
                 <button id="postMyPageButton" class="button-side">My Posts</button><br>
+                <button id="openChatButton" class="button-side">Chat</button><br>
                 <button id="logoutPostButton" class="button-side">Logout</button>
            
         </div>
@@ -184,6 +186,27 @@
                 <p>We utilize <strong>Docker</strong> to manage our application environment.</p>
             </div>
             <button class="return-button" onclick="window.location.href='http://localhost:8888/';">Return</button>
+        </div>
+    </section>
+
+    <!-- Chat Section -->
+    <section id="chatSection" hidden>
+        <div class="chat-container">
+            <div class="chat-sidebar">
+            <h3>Users</h3>
+            <ul id="userList"></ul>
+        </div>
+        <div class="chat-main">
+            <div class="chat-header">
+            <button class="return-button" onclick="returnToPosts()">Return</button>
+            <h3 id="chatWithLabel">Chat</h3>
+            </div>
+            <div id="chatWindow" class="chat-window"></div>
+            <form id="chatForm">
+                <input type="text" id="chatInput" placeholder="Type a message..." required />
+                <button type="submit" class="button-main">Send</button>
+            </form>
+        </div>
         </div>
     </section>
     

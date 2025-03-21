@@ -27,6 +27,7 @@ func CreateTables(db *sql.DB) error {
 		createComments,
 		createLikes,
 		createSession,
+        createMessage,
 	}
 
 	for _, fn := range tableFunctions {
@@ -128,5 +129,19 @@ func createSession(db *sql.DB) error {
         FOREIGN KEY (user_id) REFERENCES users(id)
     );`
 	_, err := db.Exec(query)
+	return err
+}
+
+func createMessage(db *sql.DB) error {
+    query := `CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender_id INTEGER NOT NULL,
+        receiver_id INTEGER NOT NULL,
+        content TEXT NOT NULL,
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (sender_id) REFERENCES users(id),
+        FOREIGN KEY (receiver_id) REFERENCES users(id)
+    );`
+    _, err := db.Exec(query)
 	return err
 }

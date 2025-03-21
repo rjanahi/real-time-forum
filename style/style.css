@@ -289,3 +289,124 @@ input[type="submit"]:hover {
     cursor: pointer;
     color: gray;
 }
+
+/* Layout */
+.chat-container {
+    display: flex;
+    height: 80vh;
+    border: 1px solid #ccc;
+  }
+  
+  .chat-sidebar {
+    width: 25%;
+    border-right: 1px solid #ddd;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #f7f7f7;
+  }
+  
+  .chat-sidebar ul {
+    list-style: none;
+    padding: 0;
+  }
+  
+  .chat-sidebar li {
+    padding: 8px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+  }
+  
+  .chat-sidebar li:hover {
+    background-color: #e6e6e6;
+  }
+  
+  .chat-main {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+  }
+  
+  .chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+  
+  .chat-window {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 10px;
+    background-color: #ffffff;
+    border: 1px solid #ccc;
+    margin-bottom: 10px;
+  }
+  
+  #chatForm {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ccc;
+  }
+  
+  #chatInput {
+    flex-grow: 1; /* Expand to take available space */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 16px;
+  }
+  
+  #chatForm button {
+    padding: 10px 15px;
+    border: none;
+    background-color: black;
+    color: white;
+    font-size: 16px;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  .user-status {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+  }
+  
+  .user-online {
+    background-color: #28a745;
+  }
+  
+  .user-offline {
+    background-color: #ccc;
+  }
+
+  /* Style for online user highlight in sidebar */
+.chat-sidebar li.online {
+    font-weight: bold;
+  }
+  
+  .chat-sidebar li .username {
+    flex-grow: 1;
+  }
+  
+  .chat-sidebar li .status-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    margin-left: 8px;
+  }
+  
+  .chat-sidebar li .status-dot.online {
+    background-color: #28a745;
+  }
+  
+  .chat-sidebar li .status-dot.offline {
+    background-color: #ccc;
+  }
+  
