@@ -6,6 +6,13 @@ let typingTimeout = null;
 let currentOffset = 0;
 let throttle = false;
 
+let Myusername;
+let Theirname;
+
+const chatWindow = document.getElementById("chatWindow");
+let currentHeight = 150; // Starting height
+const maxHeight = 200; // Maximum height
+
 export function connectWebSocket(userId) {
     socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`);
 
@@ -15,15 +22,22 @@ export function connectWebSocket(userId) {
 
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-
-        if (msg.type === "typing" && msg.from === selectedUserId) {
-            showTypingIndicator();
+    
+        if (msg.type === "typing") {
+            if (msg.from === selectedUserId) {
+                showTypingIndicator(Theirname);
+            }
             return;
         }
 
         if (msg.type === "message") {
             appendMessageToChat(msg);
             updateUserPreview(msg);
+            return;
+        }
+
+        if (msg.type === "status_update") {
+            updateUserStatus(msg.username, msg.status);
         }
     };
 
@@ -32,9 +46,47 @@ export function connectWebSocket(userId) {
     };
 }
 
+function updateUserStatus(username, status) {
+    const userList = document.getElementById("userList").getElementsByTagName("li");
+    for (let li of userList) {
+        const userItem = li.querySelector('.username');
+        if (userItem && userItem.textContent === username) {
+            const statusDot = li.querySelector('.status-dot');
+            if (status === 'online') {
+                userLoggedIn(username)
+                statusDot.classList.add('online');
+                statusDot.classList.remove('offline');
+            } else {
+                userLoggedOut(username)
+                statusDot.classList.add('offline');
+                statusDot.classList.remove('online');
+            }
+            break; // User found and updated, break the loop
+        }
+    }
+}
+
+function userLoggedIn(username) {
+    const statusUpdate = {
+        type: "status_update",
+        username: username,
+        status: "online"
+    };
+    socket.send(JSON.stringify(statusUpdate));
+}
+
+function userLoggedOut(username) {
+    const statusUpdate = {
+        type: "status_update",
+        username: username,
+        status: "offline"
+    };
+    socket.send(JSON.stringify(statusUpdate));
+}
+
 export function sendMessage(toId, content) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
-    
+
     const message = {
         type: "message",
         from: loggedInUserId,
@@ -53,21 +105,33 @@ function sendTypingSignal() {
     const signal = {
         type: "typing",
         from: loggedInUserId,
+        username: Myusername, // Ensure this has the correct username
         to: selectedUserId
     };
 
     socket.send(JSON.stringify(signal));
 }
 
-function showTypingIndicator() {
-    const label = document.getElementById("chatWithLabel");
-    const originalText = label.textContent;
-    label.textContent = originalText + " (typing...)";
+function showTypingIndicator(username) {
+    const container = document.getElementById("chatWindow");
+    
+    // Check if the typing indicator already exists
+    const existingTypingMsg = container.querySelector(".typing-message");
+    if (!existingTypingMsg) {
+        const typingNode = document.createElement("div");
+        typingNode.classList.add("typing-message");
+        typingNode.textContent = `${username} is typing...`;
+        container.appendChild(typingNode);
+        container.scrollTop = container.scrollHeight; // Scroll to the bottom
+    }
 
+    // Reset the timeout for hiding the indicator
     if (typingTimeout) clearTimeout(typingTimeout);
     typingTimeout = setTimeout(() => {
-        label.textContent = originalText.replace(" (typing...)", "");
-    }, 1500);
+        if (existingTypingMsg) {
+            existingTypingMsg.remove(); // Remove typing message
+        }
+    }, 1000); // Hide after 1 second of inactivity
 }
 
 export function loadMessages(withId, offset = 0) {
@@ -79,36 +143,70 @@ export function loadMessages(withId, offset = 0) {
           return;
       }
 
-      messages.reverse().forEach(msg => prependMessageToChat(msg));
+      messages.forEach(msg => prependMessageToChat(msg));
       throttle = false;
   })
   .catch(err => console.error("❌ Error loading messages:", err));
 }
 
 function appendMessageToChat(msg) {
-    const container = document.getElementById("chatWindow");
-    const node = document.createElement("div");
-    node.classList.add("chat-message");
-    node.innerHTML = `<strong>${msg.from === loggedInUserId ? "You" : "User " + msg.from}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
-    container.appendChild(node);
-    container.scrollTop = container.scrollHeight;
+    const messagesContainer = document.getElementById("chatWindow");
+    const newMessage = document.createElement("div");
+    newMessage.classList.add("chat-message");
+
+    if (msg.from === loggedInUserId) {
+        newMessage.classList.add("my-message"); // User's message
+        newMessage.innerHTML = `<strong>${Myusername}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    } else {
+        newMessage.classList.add("received-message"); // Received message
+        newMessage.innerHTML = `<strong>${Theirname}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    }
+
+    // Append the new message instead of prepending
+    messagesContainer.append(newMessage); // Use append() instead of prepend()
+
+    // Automatically scroll to the bottom if the user is already at the bottom
+    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
+    if (isAtBottom) {
+        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+    }
 }
 
 function prependMessageToChat(msg) {
     const container = document.getElementById("chatWindow");
     const node = document.createElement("div");
     node.classList.add("chat-message");
-    node.innerHTML = `<strong>${msg.from}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+
+    // Determine the alignment based on the sender
+    if (msg.from === loggedInUserId) {
+        node.classList.add("my-message"); // User's message
+        node.innerHTML = `<strong>${Myusername}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    } else {
+        node.classList.add("received-message"); // Received message
+        node.innerHTML = `<strong>${Theirname}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+    }
+
+    // Insert the new message at the top
     container.insertBefore(node, container.firstChild);
+
+    container.scrollTop = 0;
 }
 
 export function setupScroll(chatUserId) {
-    const container = document.getElementById("chatWindow");
+    const container = document.getElementsByClassName("chat-window")[0];
     container.addEventListener("scroll", () => {
         if (container.scrollTop === 0 && !throttle) {
             throttle = true;
+            if (currentHeight < maxHeight) {
+                currentHeight += 10; // Increase height by 10
+                container.style.height = `${currentHeight}px`; // Apply new height
+            }
             currentOffset += 10;
             loadMessages(chatUserId, currentOffset);
+            // Reset throttle after loading messages
+            setTimeout(() => {
+                throttle = false; // Allow scrolling again after a short delay
+            }, 1500); // Adjust the delay as needed
         }
     });
 }
@@ -142,6 +240,7 @@ function hideAllSections() {
 function returnToPosts() {
     hideAllSections();
     document.getElementById("postPageSection").hidden = false;
+    history.pushState(null, '', '/posts');
 }
 
 export function loadAndInitChat(userId) {
@@ -149,49 +248,60 @@ export function loadAndInitChat(userId) {
     connectWebSocket(userId);
     fetchUserList();
     setupChatForm();
+    
+    chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 function fetchUserList() {
-  fetch("/get-users", { credentials: 'include' })
-      .then(res => res.json())
-      .then(users => {
-          const userList = document.getElementById("userList");
-          userList.innerHTML = '';
+    fetch("/get-users", { credentials: 'include' })
+        .then(res => res.json())
+        .then(users => {
+            const userList = document.getElementById("userList");
+            userList.innerHTML = '';
 
-          users.forEach(user => {
-              if (user.id !== loggedInUserId) {
-                  const li = document.createElement("li");
-                  li.dataset.userId = user.id;
-                  li.classList.add("user-item");
+            users.forEach(user => {
+                if (user.id !== loggedInUserId) {
+                    const li = document.createElement("li");
+                    li.dataset.userId = user.id;
+                    li.classList.add("user-item");
 
-                  // ✅ Create username span
-                  const usernameSpan = document.createElement("span");
-                  usernameSpan.textContent = user.username;
+                    // Create username span
+                    const usernameSpan = document.createElement("span");
+                    usernameSpan.textContent = user.username;
 
-                  // ✅ Create status dot
-                  const statusDot = document.createElement("span");
-                  statusDot.classList.add("status-dot");
-                  statusDot.classList.add(user.online ? "online" : "offline");
+                    // Create status dot
+                    const statusDot = document.createElement("span");
+                    statusDot.classList.add("status-dot");
+                    statusDot.classList.add(user.online ? "online" : "offline");
+                    
+                    // Append elements
+                    li.appendChild(usernameSpan);
+                    li.appendChild(statusDot);
+                    li.onclick = () => openChatWith(user.id, user.username);
 
-                  // ✅ Append elements
-                  li.appendChild(usernameSpan);
-                  li.appendChild(statusDot);
-                  li.onclick = () => openChatWith(user.id, user.username);
-
-                  userList.appendChild(li);
-              }
-          });
-      })
-      .catch(err => console.error("Failed to fetch users:", err));
+                    userList.appendChild(li);
+                } else  {
+                    Myusername = user.username; // Set your username here
+                    console.log("The user.username: "+user.username+", Myusername: "+Myusername);
+                }
+            });
+        })
+        .catch(err => console.error("Failed to fetch users:", err));
 }
 
 
 function openChatWith(userId, username) {
+    Theirname = username;
     selectedUserId = userId;
     currentOffset = 0;
+    chatWindow.style.display = 'flex';
     document.getElementById("chatWindow").innerHTML = '';
     document.getElementById("chatWithLabel").textContent = `Chat with ${username}`;
     showChatSection();
+
+    const chatForm = document.getElementById("chatForm");
+    chatForm.style.display = "flex";
+
     loadMessages(userId);
     setupScroll(userId);
 }
@@ -218,3 +328,4 @@ function setupChatForm() {
 window.showChatSection = showChatSection;
 window.returnToPosts = returnToPosts;
 window.loadAndInitChat = loadAndInitChat;
+

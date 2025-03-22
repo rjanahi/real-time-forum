@@ -23,6 +23,9 @@ const postMyPageButton = document.getElementById('postMyPageButton');
 const categoryButtons = document.querySelectorAll('#categoryOptions .button-side');
 const openChatButton = document.getElementById('openChatButton');
 
+let userID = 0;
+let Chatusername;
+
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
     mainSection.hidden = true;
@@ -41,7 +44,7 @@ function showSection(sectionToShow, urlSuffix) {
 // Consolidated event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-
+    loadAndInitChat(userID); // Your custom chat setup function
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
@@ -74,7 +77,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openChatButton) {
         openChatButton.addEventListener('click', () => {
             showSection(document.getElementById('chatSection'), '/chat');
-            loadAndInitChat(data.userID); // Your custom chat setup function
+            loadAndInitChat(userID); // Your custom chat setup function
         });
     }
     categoryButtons.forEach(button => {
@@ -152,6 +155,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(data => {
                 console.log(data.message);
                 if (data.message === "Login successful.") {
+                    Chatusername = data.username;
                     checkSession(); // Refresh session check
                     loginForm.reset();
                     showSection(postPageSection, '/posts'); // Navigate to posts section
@@ -625,6 +629,7 @@ function checkSession() {
     })
         .then(response => response.json())
         .then(data => {
+            userID = data.userID;
             const signUpButton = document.getElementById('signUpButton');
             const logInButton = document.getElementById('logInButton');
             const logoutButton = document.getElementById('logoutButton');
