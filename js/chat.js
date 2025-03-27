@@ -13,7 +13,7 @@ const chatWindow = document.getElementById("chatWindow");
 let currentHeight = 150; // Starting height
 const maxHeight = 200; // Maximum height
 
-export function connectWebSocket(userId) {
+ function connectWebSocket(userId) {
     socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`);
 
     socket.onopen = () => {
@@ -22,7 +22,7 @@ export function connectWebSocket(userId) {
 
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-    
+    console.log(msg.type);
         if (msg.type === "typing") {
             if (msg.from === selectedUserId) {
                 showTypingIndicator(Theirname);
@@ -39,6 +39,11 @@ export function connectWebSocket(userId) {
         if (msg.type === "status_update") {
             updateUserStatus(msg.username, msg.status);
         }
+
+        if (msg.type === "new_user") {
+            fetchUserList(); // Fetch updated user list when a new user is created
+            return;
+        }
     };
 
     socket.onclose = () => {
@@ -53,11 +58,9 @@ function updateUserStatus(username, status) {
         if (userItem && userItem.textContent === username) {
             const statusDot = li.querySelector('.status-dot');
             if (status === 'online') {
-                userLoggedIn(username)
                 statusDot.classList.add('online');
                 statusDot.classList.remove('offline');
             } else {
-                userLoggedOut(username)
                 statusDot.classList.add('offline');
                 statusDot.classList.remove('online');
             }
@@ -81,10 +84,10 @@ function userLoggedOut(username) {
         username: username,
         status: "offline"
     };
-    socket.send(JSON.stringify(statusUpdate));
+    broadcastToAllClients(statusUpdate);
 }
 
-export function sendMessage(toId, content) {
+ function sendMessage(toId, content) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
     const message = {
@@ -134,7 +137,7 @@ function showTypingIndicator(username) {
     }, 1000); // Hide after 1 second of inactivity
 }
 
-export function loadMessages(withId, offset = 0) {
+ function loadMessages(withId, offset = 0) {
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: 'include' })
   .then(res => res.json())
   .then(messages => {
@@ -164,12 +167,7 @@ function appendMessageToChat(msg) {
 
     // Append the new message instead of prepending
     messagesContainer.append(newMessage); // Use append() instead of prepend()
-
-    // Automatically scroll to the bottom if the user is already at the bottom
-    const isAtBottom = messagesContainer.scrollHeight - messagesContainer.clientHeight <= messagesContainer.scrollTop + 1;
-    if (isAtBottom) {
-        messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
-    }
+    messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
 }
 
 function prependMessageToChat(msg) {
@@ -188,11 +186,9 @@ function prependMessageToChat(msg) {
 
     // Insert the new message at the top
     container.insertBefore(node, container.firstChild);
-
-    container.scrollTop = 0;
 }
 
-export function setupScroll(chatUserId) {
+ function setupScroll(chatUserId) {
     const container = document.getElementsByClassName("chat-window")[0];
     container.addEventListener("scroll", () => {
         if (container.scrollTop === 0 && !throttle) {
@@ -243,18 +239,24 @@ function returnToPosts() {
     history.pushState(null, '', '/posts');
 }
 
-export function loadAndInitChat(userId) {
+ function loadAndInitChat(userId) {
     loggedInUserId = userId;
     connectWebSocket(userId);
     fetchUserList();
     setupChatForm();
-    
+    updateUserListPeriodically()
     chatWindow.scrollTop = chatWindow.scrollHeight;
 }
 
 function fetchUserList() {
-    fetch("/get-users", { credentials: 'include' })
-        .then(res => res.json())
+    fetch("/get-users", {  credentials: 'include' })
+    .then(res => {
+        if (res.status === 401) {
+            console.error("Unauthorized access. Please log in.");
+            return;
+        }
+        return res.json();
+    })
         .then(users => {
             const userList = document.getElementById("userList");
             userList.innerHTML = '';
@@ -282,7 +284,6 @@ function fetchUserList() {
                     userList.appendChild(li);
                 } else  {
                     Myusername = user.username; // Set your username here
-                    console.log("The user.username: "+user.username+", Myusername: "+Myusername);
                 }
             });
         })
@@ -323,7 +324,11 @@ function setupChatForm() {
         sendTypingSignal();
     });
 }
-
+function updateUserListPeriodically() {
+    setInterval(() => {
+        fetchUserList(); // Fetch the updated user list
+    }, 300); // Update every 5 seconds (adjust as needed)
+}
 // Expose functions globally
 window.showChatSection = showChatSection;
 window.returnToPosts = returnToPosts;
