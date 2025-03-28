@@ -625,7 +625,7 @@ function getInteractions(postId, commentId = null) {
 function checkSession() {
     fetch('/check-session', {
         method: 'GET',
-        credentials: 'include' //  Ensures cookies are sent
+        credentials: 'include' 
     })
         .then(response => response.json())
         .then(data => {

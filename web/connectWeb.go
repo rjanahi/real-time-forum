@@ -251,47 +251,49 @@ func ConnectWeb(db *sql.DB) {
 			messages = []chat.Message{} // ✅ Ensure an empty array is sent instead of `null`
 		}
 		json.NewEncoder(w).Encode(messages)
-		
+
 	})
 
 	http.HandleFunc("/get-users", func(w http.ResponseWriter, r *http.Request) {
 		_, loggedIn := u.ValidateSession(db, r)
 		if !loggedIn {
-			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			var empty []map[string]interface{}
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(empty)
 			return
 		}
-	
-		onlineIDs := chatHub.GetOnlineUserIDs() // ✅ Get list of online users
-		onlineSet := make(map[int]bool)
-		for _, id := range onlineIDs {
-			onlineSet[id] = true
-		}
-	
-		rows, err := db.Query(`SELECT id, username FROM users`)
-		if err != nil {
-			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
-			return
-		}
-		defer rows.Close()
-	
-		var users []map[string]interface{}
-		for rows.Next() {
-			var id int
-			var username string
-			if err := rows.Scan(&id, &username); err == nil {
-				users = append(users, map[string]interface{}{
-					"id":       id,
-					"username": username,
-					"online":   onlineSet[id], // ✅ Add online status
-				})
+		if r.Method == http.MethodGet {
+			onlineIDs := chatHub.GetOnlineUserIDs() // ✅ Get list of online users
+			onlineSet := make(map[int]bool)
+			for _, id := range onlineIDs {
+				onlineSet[id] = true
 			}
+
+			rows, err := db.Query(`SELECT id, username FROM users`)
+			if err != nil {
+				http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+				return
+			}
+			defer rows.Close()
+
+			var users []map[string]interface{}
+			for rows.Next() {
+				var id int
+				var username string
+				if err := rows.Scan(&id, &username); err == nil {
+					users = append(users, map[string]interface{}{
+						"id":       id,
+						"username": username,
+						"online":   onlineSet[id], // ✅ Add online status
+					})
+				}
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(users)
 		}
-	
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(users)
+
 	})
-	
-	
 
 	fmt.Println("Listening on: http://localhost:8888/")
 	if err := http.ListenAndServe("0.0.0.0:8888", nil); err != nil {

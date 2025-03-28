@@ -37,6 +37,7 @@ const maxHeight = 200; // Maximum height
         }
 
         if (msg.type === "status_update") {
+            console.log(msg.username+", "+ msg.status)
             updateUserStatus(msg.username, msg.status);
         }
 
@@ -67,24 +68,6 @@ function updateUserStatus(username, status) {
             break; // User found and updated, break the loop
         }
     }
-}
-
-function userLoggedIn(username) {
-    const statusUpdate = {
-        type: "status_update",
-        username: username,
-        status: "online"
-    };
-    socket.send(JSON.stringify(statusUpdate));
-}
-
-function userLoggedOut(username) {
-    const statusUpdate = {
-        type: "status_update",
-        username: username,
-        status: "offline"
-    };
-    broadcastToAllClients(statusUpdate);
 }
 
  function sendMessage(toId, content) {
@@ -249,7 +232,10 @@ function returnToPosts() {
 }
 
 function fetchUserList() {
-    fetch("/get-users", {  credentials: 'include' })
+    fetch("/get-users", { 
+        method:'GET', 
+        credentials: 'include' 
+    })
     .then(res => {
         if (res.status === 401) {
             console.error("Unauthorized access. Please log in.");
@@ -261,31 +247,37 @@ function fetchUserList() {
             const userList = document.getElementById("userList");
             userList.innerHTML = '';
 
-            users.forEach(user => {
-                if (user.id !== loggedInUserId) {
-                    const li = document.createElement("li");
-                    li.dataset.userId = user.id;
-                    li.classList.add("user-item");
-
-                    // Create username span
-                    const usernameSpan = document.createElement("span");
-                    usernameSpan.textContent = user.username;
-
-                    // Create status dot
-                    const statusDot = document.createElement("span");
-                    statusDot.classList.add("status-dot");
-                    statusDot.classList.add(user.online ? "online" : "offline");
-                    
-                    // Append elements
-                    li.appendChild(usernameSpan);
-                    li.appendChild(statusDot);
-                    li.onclick = () => openChatWith(user.id, user.username);
-
-                    userList.appendChild(li);
-                } else  {
-                    Myusername = user.username; // Set your username here
-                }
-            });
+            if (users == null) {
+                console.log("No users found."); // Optional: Log a message if no users
+                return; // Exit the function if no users are present
+            }else{
+                users.forEach(user => {
+                
+                    if (user.id !== loggedInUserId) {
+                        const li = document.createElement("li");
+                        li.dataset.userId = user.id;
+                        li.classList.add("user-item");
+    
+                        // Create username span
+                        const usernameSpan = document.createElement("span");
+                        usernameSpan.textContent = user.username;
+    
+                        // Create status dot
+                        const statusDot = document.createElement("span");
+                        statusDot.classList.add("status-dot");
+                        statusDot.classList.add(user.online ? "online" : "offline");
+                        
+                        // Append elements
+                        li.appendChild(usernameSpan);
+                        li.appendChild(statusDot);
+                        li.onclick = () => openChatWith(user.id, user.username);
+    
+                        userList.appendChild(li);
+                    } else  {
+                        Myusername = user.username; // Set your username here
+                    }
+                });
+            }
         })
         .catch(err => console.error("Failed to fetch users:", err));
 }
