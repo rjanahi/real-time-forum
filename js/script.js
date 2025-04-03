@@ -68,12 +68,14 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 console.log(data.message);
+                disconnectWeb();
                 checkSession(); // Refresh UI
                 showSection(mainSection, '/'); // Redirect to main page
             })
             .catch(error => console.error("Logout failed:", error));
         });
     }
+    
     if (openChatButton) {
         openChatButton.addEventListener('click', () => {
             showSection(document.getElementById('chatSection'), '/chat');

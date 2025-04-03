@@ -37,7 +37,6 @@ const maxHeight = 200; // Maximum height
         }
 
         if (msg.type === "status_update") {
-            console.log(msg.username+", "+ msg.status)
             updateUserStatus(msg.username, msg.status);
         }
 
@@ -248,7 +247,7 @@ function fetchUserList() {
             userList.innerHTML = '';
 
             if (users == null) {
-                console.log("No users found."); // Optional: Log a message if no users
+                // console.log("No users found."); // Optional: Log a message if no users
                 return; // Exit the function if no users are present
             }else{
                 users.forEach(user => {
@@ -316,13 +315,21 @@ function setupChatForm() {
         sendTypingSignal();
     });
 }
+
 function updateUserListPeriodically() {
     setInterval(() => {
         fetchUserList(); // Fetch the updated user list
     }, 300); // Update every 5 seconds (adjust as needed)
 }
+
+function disconnectWeb() {
+    socket.close();
+    console.log("Socket closed.")
+}
+
 // Expose functions globally
 window.showChatSection = showChatSection;
 window.returnToPosts = returnToPosts;
 window.loadAndInitChat = loadAndInitChat;
+window.disconnectWeb = disconnectWeb;
 
