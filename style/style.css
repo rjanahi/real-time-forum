@@ -10,7 +10,7 @@ body {
     justify-content: center; 
 }
 
- .mainPage, .postPage ,.signUp ,.logIn ,.createPost, .aboutUs,.comments{
+ .mainPage, .postPage ,.signUp ,.logIn ,.createPost, .aboutUs,.comments,.errorSection{
     margin: 0; /* Remove default margin */
     padding: 0; /* Remove default padding */
     width: 100%; /* Full width */
@@ -18,7 +18,7 @@ body {
     display: flex; /* Use flexbox for layout */
 }
 
-.postPage ,.signUp ,.logIn ,.createPost, .aboutUsm, .comments{
+.postPage ,.signUp ,.logIn ,.createPost, .aboutUsm, .comments,.errorSection{
     display: none;
 }
 
@@ -246,13 +246,17 @@ input[type="submit"]:hover {
 }
 
 /* Container styles */
-.container-about {
+.container-about,#errorContainer {
     margin-top: 10px;
     padding: 20px; /* Padding for the container */
     max-width: 800px; /* Max width for content */
     background: #f4f4f4; /* Light gray background */
     border-radius: 8px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+#errorContainer{
+    text-align: center;
 }
 
 .box-about {

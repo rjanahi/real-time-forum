@@ -6,6 +6,7 @@ const postPageSection = document.getElementById('postPageSection');
 const createPostSection = document.getElementById('createPostSection');
 const aboutUsSection = document.getElementById('aboutUsSection');
 const commentsSection = document.getElementById('commentsSection');
+const errorSection = document.getElementById('errorSection');
 
 // Get references to buttons
 const signUpButton = document.getElementById('signUpButton');
@@ -28,6 +29,7 @@ let Chatusername;
 
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
+    errorSection.hidden=true;
     mainSection.hidden = true;
     signUpSection.hidden = true;
     logInSection.hidden = true;
@@ -72,10 +74,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkSession(); // Refresh UI
                 showSection(mainSection, '/'); // Redirect to main page
             })
-            .catch(error => console.error("Logout failed:", error));
+            .catch(error => showSection(errorSection,'/error/500'));
         });
     }
-    
+
     if (openChatButton) {
         openChatButton.addEventListener('click', () => {
             showSection(document.getElementById('chatSection'), '/chat');
@@ -131,8 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .catch(error => {
-                    feedbackMessage.textContent = 'An error occurred: ' + error.message;
-                    feedbackMessage.style.color = 'red';
+                    showSection(errorSection,'/error/500');
                 });
         });
     }
@@ -169,7 +170,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     loginForm.reset();
                 }
             })
-            .catch(error => alert("An error occurred: " + error.message));
+            .catch(error => showSection(errorSection,'/error/500'));
         });
     }
 
@@ -203,7 +204,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadPosts();
                     showSection(postPageSection, '/posts');
                 })
-                .catch(error => alert("An error occurred: " + error.message));
+                .catch(error => showSection(errorSection,'/error/500'));
         });
     }
     
@@ -273,7 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
            
         })
-        .catch(error => console.error("Error loading posts:", error));
+        .catch(error => showSection(errorSection,'/error/500'));
     }
 
     //load only user posts
@@ -325,7 +326,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
            
         })
-        .catch(error => console.error("Error loading posts:", error));
+        .catch(error => showSection(errorSection,'/error/500'));
     }
 
     //load posts with specific category
@@ -337,7 +338,9 @@ document.addEventListener('DOMContentLoaded', () => {
         })
         .then(response => {
             if (!response.ok) {
+                showSection(errorSection,'/error/500');
                 throw new Error('Network response was not ok');
+                
             }
             return response.json();
         })
@@ -394,7 +397,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', () => loadCommentsForPost(button.dataset.postId));
             });
         })
-        .catch(error => console.error("Error loading posts:", error));
+        .catch(error => showSection(errorSection,'/error/500'));
     }
 
 
@@ -516,6 +519,35 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     
+    function errorPage(errNum) {
+        fetch('/error/' + errNum, {
+            method: 'GET', 
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include'
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+        
+
+            const errContainer = document.querySelector('.container-error');
+            errContainer.innerHTML = ''; // Clear existing content
+            errContainer.innerHTML = `<h1>ERROR ${data.code}</h1>`; // Display error number
+    
+            const errElement = document.createElement('div');
+            errElement.classList.add('err');
+    
+            errElement.innerHTML = `<p>This is error ${data.code}: ${data.message}</p>`;
+            errContainer.appendChild(errElement);
+            
+        })
+        .catch(error => showSection(errorSection,'/error/500'));
+    }
+    
        
 });
 
@@ -582,8 +614,6 @@ function likeDislikePost(postId, isLike) {
     });
 }
 
-
-
 function getInteractions(postId, commentId = null) {
     let requestBody = commentId 
         ? { comment_id: commentId } // Fetch comment interactions
@@ -622,7 +652,6 @@ function getInteractions(postId, commentId = null) {
     })
     .catch(error => console.error(' Error fetching likes/dislikes:', error));
 }
-
 
 function checkSession() {
     fetch('/check-session', {

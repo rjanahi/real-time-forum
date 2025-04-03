@@ -236,11 +236,7 @@ function fetchUserList() {
         credentials: 'include' 
     })
     .then(res => {
-        if (res.status === 401) {
-            console.error("Unauthorized access. Please log in.");
-            return;
-        }
-        return res.json();
+        res => res.json();
     })
         .then(users => {
             const userList = document.getElementById("userList");

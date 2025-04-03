@@ -11,6 +11,7 @@ import (
 	likerepo "forum/apis/like/repo"
 	p "forum/apis/post"
 	u "forum/apis/user"
+	e "forum/apis/error"
 	"forum/database"
 	"log"
 	"net/http"
@@ -113,12 +114,15 @@ func ConnectWeb(db *sql.DB) {
 	likesRepo := likerepo.NewLikesRepository(db)
 	likesService := like.NewLikesService(likesRepo)
 	likesController := like.NewLikesController(*likesService)
+
 	http.HandleFunc("/likeDislikePost", func(w http.ResponseWriter, r *http.Request) {
 		likesController.LikeDislikePost(w, r, db)
 	})
+
 	http.HandleFunc("/likeDislikeComment", func(w http.ResponseWriter, r *http.Request) {
 		likesController.InteractWithComment(w, r, db)
 	})
+
 	http.HandleFunc("/getInteractions", likesController.GetInteractions)
 
 	http.HandleFunc("/comments", func(w http.ResponseWriter, r *http.Request) {
@@ -166,6 +170,12 @@ func ConnectWeb(db *sql.DB) {
 			return
 		}
 		p.GetPostbyCategory(db, w, r, category)
+	})
+
+	http.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) {
+		err := strings.TrimPrefix(r.URL.Path, "/error/")
+		fmt.Println(err)
+		e.ErrorPage(w,r,err)
 	})
 
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
