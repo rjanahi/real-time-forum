@@ -8,12 +8,17 @@ let throttle = false;
 
 let Myusername;
 let Theirname;
+let isErrorState = false;
 
 const chatWindow = document.getElementById("chatWindow");
 let currentHeight = 150; // Starting height
 const maxHeight = 200; // Maximum height
 
  function connectWebSocket(userId) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`);
 
     socket.onopen = () => {
@@ -120,6 +125,10 @@ function showTypingIndicator(username) {
 }
 
  function loadMessages(withId, offset = 0) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: 'include' })
   .then(res => res.json())
   .then(messages => {
@@ -131,7 +140,7 @@ function showTypingIndicator(username) {
       messages.forEach(msg => prependMessageToChat(msg));
       throttle = false;
   })
-  .catch(err => console.error("❌ Error loading messages:", err));
+  .catch(err =>errorPage(500));
 }
 
 function appendMessageToChat(msg) {
@@ -231,12 +240,25 @@ function returnToPosts() {
 }
 
 function fetchUserList() {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        alert('Cannot send data;');
+        return; // Exit if in error state
+    }
     fetch("/get-users", { 
         method:'GET', 
         credentials: 'include' 
     })
     .then(res => {
-        res => res.json();
+        if (res.status === 401) {
+            console.error("Unauthorized access. Please log in.");
+            return;
+        }
+        if (res.status === 404) {
+            errorPage(404); // Handle user list not found
+            return;
+        }
+        return res.json();
     })
         .then(users => {
             const userList = document.getElementById("userList");
@@ -274,7 +296,7 @@ function fetchUserList() {
                 });
             }
         })
-        .catch(err => console.error("Failed to fetch users:", err));
+        .catch(err => errorPage(500));
 }
 
 
@@ -323,9 +345,61 @@ function disconnectWeb() {
     console.log("Socket closed.")
 }
 
+function showSection(sectionToShow, urlSuffix) {
+    hideAllSections()
+    sectionToShow.hidden = false;
+
+    // Update the URL
+    history.pushState(null, '', urlSuffix);
+}
+
+function errorPage(errNum) {
+    const errorSection = document.getElementById('errorSection');
+    const errorContainer = document.getElementById("errorContainer");
+
+    // Set the error state to prevent further actions
+    isErrorState = true;
+
+    fetch("/error/" + errNum, { 
+        method: 'GET', 
+        credentials: 'include' 
+    })
+    .then(res => {
+        return res.text(); // Handle HTML response
+    })
+    .then(html => {
+        // Update the error container with the HTML response
+        errorContainer.innerHTML = html;
+
+        // Show the appropriate error section based on the error number
+        switch (errNum) {
+            case 400:
+                showSection(errorSection, "/error/400");
+                break;
+            case 404:
+                showSection(errorSection, "/error/404");
+                break;
+            case 500:
+                showSection(errorSection, "/error/500");
+                break;   
+            default:
+                showSection(errorSection, "/error/404");
+                break;
+        }
+    })
+    .catch(err => {
+        console.error("Failed to fetch error details:", err);
+    })
+    .finally(() => {
+        // Reset the error state after handling
+        isErrorState = false;
+    });
+}
+
 // Expose functions globally
 window.showChatSection = showChatSection;
 window.returnToPosts = returnToPosts;
 window.loadAndInitChat = loadAndInitChat;
 window.disconnectWeb = disconnectWeb;
-
+window.errorPage = errorPage;
+window.isErrorState = isErrorState;

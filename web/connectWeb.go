@@ -7,11 +7,11 @@ import (
 	"strings"
 
 	"forum/apis/chat"
+	e "forum/apis/error"
 	"forum/apis/like"
 	likerepo "forum/apis/like/repo"
 	p "forum/apis/post"
 	u "forum/apis/user"
-	e "forum/apis/error"
 	"forum/database"
 	"log"
 	"net/http"
@@ -172,12 +172,6 @@ func ConnectWeb(db *sql.DB) {
 		p.GetPostbyCategory(db, w, r, category)
 	})
 
-	http.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) {
-		err := strings.TrimPrefix(r.URL.Path, "/error/")
-		fmt.Println(err)
-		e.ErrorPage(w,r,err)
-	})
-
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
 		userID, loggedIn := u.ValidateSession(db, r)
 		response := map[string]interface{}{
@@ -302,6 +296,19 @@ func ConnectWeb(db *sql.DB) {
 			w.Header().Set("Content-Type", "application/json")
 			json.NewEncoder(w).Encode(users)
 		}
+
+	})
+
+	http.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) {
+		num, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/error/"))
+		fmt.Println(num)
+		if err != nil {
+			e.ErrorHandler(w, r, 500) // If there's an error converting, return a 500 error
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(500)
+			return
+		}
+		e.ErrorHandler(w, r, num)
 
 	})
 

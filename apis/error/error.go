@@ -1,52 +1,25 @@
 package error
 
-import (
-	"net/http"
-)
+import "net/http"
 
-func ErrorPage(w http.ResponseWriter, r *http.Request, errCode string) {
+func ErrorHandler(w http.ResponseWriter, r *http.Request, errNum int) {
 	w.Header().Set("Content-Type", "text/html")
 
-	var message string
-	switch errCode {
-	case "400":
-		w.WriteHeader(http.StatusBadRequest)
-		message = "Bad Request: Your request is invalid."
-	case "404":
-		w.WriteHeader(http.StatusNotFound)
-		message = "Not Found: The page you are looking for does not exist."
-	case "500":
-		w.WriteHeader(http.StatusInternalServerError)
-		message = "Internal Server Error: There was an internal server error."
+	switch errNum {
+	case 400:
+		w.WriteHeader(http.StatusBadRequest) // 400 Bad Request
+		w.Write([]byte("<h1>400 Bad Request</h1><p>Your request could not be understood.</p>"))
+
+	case 404:
+		w.WriteHeader(http.StatusNotFound) // 404 Not Found
+		w.Write([]byte("<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>"))
+
+	case 500:
+		w.WriteHeader(http.StatusInternalServerError) // 500 Internal Server Error
+		w.Write([]byte("<h1>500 Internal Server Error</h1><p>Something went wrong on our end.</p>"))
+
 	default:
-		w.WriteHeader(http.StatusNotFound)
-		message = "Not Found: Page not found."
+		w.WriteHeader(http.StatusInternalServerError) // Default to 500 for unknown errors
+		w.Write([]byte("<h1>500 Internal Server Error</h1><p>Something went wrong.</p>"))
 	}
-
-	// Create a simple HTML response
-	htmlResponse := `
-	<!DOCTYPE html>
-	<html lang="en">
-	<head>
-	    <meta charset="UTF-8">
-	    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-		<link rel="stylesheet" type="text/css" href="../style/style.css">
-	    <title>Error</title>
-	</head>
-	<body>
-	<section id="errorSection">
-        <div class="container-error">
-            <div id="errorContainer">
-				<h1>Error ` + errCode + `</h1>
-				<p>` + message + `</p>
-				<a href="/">Go back to home page</a>
-			</div>
-        </div>
-    </section>
-	    
-	</body>
-	</html>
-	`
-
-	w.Write([]byte(htmlResponse))
 }

@@ -29,7 +29,7 @@ let Chatusername;
 
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
-    errorSection.hidden=true;
+    errorSection.hidden = true;
     mainSection.hidden = true;
     signUpSection.hidden = true;
     logInSection.hidden = true;
@@ -74,10 +74,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkSession(); // Refresh UI
                 showSection(mainSection, '/'); // Redirect to main page
             })
-            .catch(error => showSection(errorSection,'/error/500'));
+            .catch(error => errorPage(500));
         });
     }
-
     if (openChatButton) {
         openChatButton.addEventListener('click', () => {
             showSection(document.getElementById('chatSection'), '/chat');
@@ -103,6 +102,10 @@ document.addEventListener('DOMContentLoaded', () => {
    // Registration form 
     if (registrationForm) {
         registrationForm.addEventListener('submit', function (event) {
+            if (isErrorState) {
+                console.warn("Cannot send data; application is in an error state.");
+                return; // Exit if in error state
+            }
             event.preventDefault(); // Prevent default form submission
 
             const feedbackMessage = document.getElementById('feedbackMessage');
@@ -118,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 password: document.getElementById('password').value,
             };
 
+            
             fetch('/signup', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -133,7 +137,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 })
                 .catch(error => {
-                    showSection(errorSection,'/error/500');
+                    feedbackMessage.textContent = 'An error occurred: ' + error.message;
+                    feedbackMessage.style.color = 'red';
+                    errorPage(500)
                 });
         });
     }
@@ -141,6 +147,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Login form 
     if (loginForm) {
         loginForm.addEventListener('submit', function (event) {
+            if (isErrorState) {
+                console.warn("Cannot send data; application is in an error state.");
+                return; // Exit if in error state
+            }
             event.preventDefault(); // Prevent default form submission
     
             const loginData = {
@@ -170,13 +180,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     loginForm.reset();
                 }
             })
-            .catch(error => showSection(errorSection,'/error/500'));
+            .catch(error => errorPage(500));
         });
     }
 
     //Create form
     if (createPostForm) {
         createPostForm.addEventListener('submit', function (event) {
+            if (isErrorState) {
+                console.warn("Cannot send data; application is in an error state.");
+                return; // Exit if in error state
+            }
             event.preventDefault(); // Prevent default form submission
 
             // Get selected categories (checkboxes)
@@ -204,13 +218,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     loadPosts();
                     showSection(postPageSection, '/posts');
                 })
-                .catch(error => showSection(errorSection,'/error/500'));
+                .catch(error => errorPage(500));
         });
     }
     
     // Logout functionality
     if (logoutButton) {
         logoutButton.addEventListener('click', function () {
+            if (isErrorState) {
+                console.warn("Cannot send data; application is in an error state.");
+                return; // Exit if in error state
+            }
             fetch('/logout', {
                 method: 'POST',
                 credentials: 'include'
@@ -221,19 +239,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 checkSession(); // Refresh session check to update UI
                 showSection(mainSection, '/'); // Redirect to main page after logout
             })
-            .catch(error => console.error("Logout failed:", error));
+            .catch(error => errorPage(500));
         });
     }
     
-
     //load all the posts
     function loadPosts() {
+        if (isErrorState) {
+            console.warn("Cannot send data; application is in an error state.");
+            return; // Exit if in error state
+        }
         fetch('/get-posts', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 404) {
+                errorPage(404); // Handle posts not found
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('Failed to fetch posts');
+            }
+            return response.json();
+        })
         .then(posts => {
             const postContainer = document.querySelector('.container-post');
             postContainer.innerHTML = '';
@@ -274,17 +304,30 @@ document.addEventListener('DOMContentLoaded', () => {
             });
            
         })
-        .catch(error => showSection(errorSection,'/error/500'));
+        .catch(error => errorPage(500));
     }
 
     //load only user posts
     function loadMyPosts() {
+        if (isErrorState) {
+            console.warn("Cannot send data; application is in an error state.");
+            return; // Exit if in error state
+        }
         fetch('/get-myPosts', {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 404) {
+                errorPage(404); // Handle posts not found
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('Failed to fetch posts');
+            }
+            return response.json();
+        })
         .then(posts => {
             const postContainer = document.querySelector('.container-post');
             postContainer.innerHTML = '';
@@ -326,21 +369,27 @@ document.addEventListener('DOMContentLoaded', () => {
             });
            
         })
-        .catch(error => showSection(errorSection,'/error/500'));
+        .catch(error =>  errorPage(500));
     }
 
     //load posts with specific category
     function loadCategoryPosts(category) {
+        if (isErrorState) {
+            console.warn("Cannot send data; application is in an error state.");
+            return; // Exit if in error state
+        }
         fetch('/category/' + category, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
         .then(response => {
+            if (response.status === 404) {
+                errorPage(404); // Handle category not found
+                return;
+            }
             if (!response.ok) {
-                showSection(errorSection,'/error/500');
                 throw new Error('Network response was not ok');
-                
             }
             return response.json();
         })
@@ -397,17 +446,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 button.addEventListener('click', () => loadCommentsForPost(button.dataset.postId));
             });
         })
-        .catch(error => showSection(errorSection,'/error/500'));
+        .catch(error =>  errorPage(500));
     }
 
-
     function loadCommentsForPost(postId) {
+        if (isErrorState) {
+            console.warn("Cannot send data; application is in an error state.");
+            return; // Exit if in error state
+        }
         fetch(`/comments?post_id=${postId}`, {
             method: 'GET',
             headers: { 'Content-Type': 'application/json' },
             credentials: 'include'
         })
-        .then(response => response.json())
+        .then(response => {
+            if (response.status === 404) {
+                errorPage(404); // Handle comments not found
+                return;
+            }
+            if (!response.ok) {
+                throw new Error('Failed to load comments');
+            }
+            return response.json();
+        })
         .then(parsedResponse => {
             console.log(" Server Response:", parsedResponse);
     
@@ -509,49 +570,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         console.log(" Error: " + data.message);
                     }
                 })
-                .catch(error => console.error(" Error posting comment:", error));
+                .catch(error => errorPage(500));
             });
             
         })
         .catch(error => {
             console.error(" Error loading comments:", error);
             commentsSection.innerHTML = "<p>Failed to load comments.</p>";
+            errorPage(500)
         });
-    }
-    
-    function errorPage(errNum) {
-        fetch('/error/' + errNum, {
-            method: 'GET', 
-            headers: { 'Content-Type': 'application/json' },
-            credentials: 'include'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
-            }
-            return response.json();
-        })
-        .then(data => {
-        
+    }   
 
-            const errContainer = document.querySelector('.container-error');
-            errContainer.innerHTML = ''; // Clear existing content
-            errContainer.innerHTML = `<h1>ERROR ${data.code}</h1>`; // Display error number
-    
-            const errElement = document.createElement('div');
-            errElement.classList.add('err');
-    
-            errElement.innerHTML = `<p>This is error ${data.code}: ${data.message}</p>`;
-            errContainer.appendChild(errElement);
-            
-        })
-        .catch(error => showSection(errorSection,'/error/500'));
-    }
-    
-       
 });
 
 function likeDislikeComment(commentId, isLike) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     console.log(` Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
 
     let likesElement = document.getElementById(`likesCountComment${commentId}`);
@@ -561,6 +597,7 @@ function likeDislikeComment(commentId, isLike) {
         console.error(` Elements for comment ${commentId} not found.`);
         return;
     }
+    
 
     fetch('/likeDislikeComment', {
         method: 'POST',
@@ -579,10 +616,14 @@ function likeDislikeComment(commentId, isLike) {
             console.log(data.error || "Something went wrong.");
         }
     })
-    .catch(error => console.error(' Error:', error));
+    .catch(error => errorPage(500));
 }
 
 function likeDislikePost(postId, isLike) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     let likesElement = document.getElementById(`likesCountPost${postId}`);
     let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
 
@@ -611,10 +652,15 @@ function likeDislikePost(postId, isLike) {
     })
     .catch(error => {
         console.error(' Error:', error);
+        errorPage(500)
     });
 }
 
 function getInteractions(postId, commentId = null) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     let requestBody = commentId 
         ? { comment_id: commentId } // Fetch comment interactions
         : { post_id: postId };      // Fetch post interactions
@@ -650,10 +696,14 @@ function getInteractions(postId, commentId = null) {
             if (dislikesElement) dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         }
     })
-    .catch(error => console.error(' Error fetching likes/dislikes:', error));
+    .catch(error => errorPage(500));
 }
 
 function checkSession() {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     fetch('/check-session', {
         method: 'GET',
         credentials: 'include' 
@@ -688,7 +738,7 @@ function checkSession() {
                 if (postsButton) postsButton.style.display = "none";
             }
         })
-        .catch(error => console.error("Session check failed:", error));
+        .catch(error => errorPage(500));
 }
 
 function toggleDropdown(id) {
