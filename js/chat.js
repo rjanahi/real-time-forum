@@ -150,10 +150,10 @@ function appendMessageToChat(msg) {
 
     if (msg.from === loggedInUserId) {
         newMessage.classList.add("my-message"); // User's message
-        newMessage.innerHTML = `<strong>${Myusername}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        newMessage.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(msg.timestamp).toLocaleString()}:</strong><br> ${msg.content}`;
     } else {
         newMessage.classList.add("received-message"); // Received message
-        newMessage.innerHTML = `<strong>${Theirname}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        newMessage.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(msg.timestamp).toLocaleString()}:</strong><br> ${msg.content}`;
     }
 
     // Append the new message instead of prepending
@@ -169,10 +169,10 @@ function prependMessageToChat(msg) {
     // Determine the alignment based on the sender
     if (msg.from === loggedInUserId) {
         node.classList.add("my-message"); // User's message
-        node.innerHTML = `<strong>${Myusername}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        node.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(msg.timestamp).toLocaleString()}:</strong><br> ${msg.content}`;
     } else {
         node.classList.add("received-message"); // Received message
-        node.innerHTML = `<strong>${Theirname}</strong>: ${msg.content} <small>${new Date(msg.timestamp).toLocaleString()}</small>`;
+        node.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(msg.timestamp).toLocaleString()}:</strong><br> ${msg.content}`;
     }
 
     // Insert the new message at the top
