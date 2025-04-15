@@ -231,6 +231,10 @@ function returnToPosts() {
 }
 
  function loadAndInitChat(userId) {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     loggedInUserId = userId;
     connectWebSocket(userId);
     fetchUserList();
@@ -242,7 +246,6 @@ function returnToPosts() {
 function fetchUserList() {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
-        alert('Cannot send data;');
         return; // Exit if in error state
     }
     fetch("/get-users", { 
@@ -335,6 +338,10 @@ function setupChatForm() {
 }
 
 function updateUserListPeriodically() {
+    if (isErrorState) {
+        console.warn("Cannot send data; application is in an error state.");
+        return; // Exit if in error state
+    }
     setInterval(() => {
         fetchUserList(); // Fetch the updated user list
     }, 300); // Update every 5 seconds (adjust as needed)
@@ -357,9 +364,6 @@ function errorPage(errNum) {
     const errorSection = document.getElementById('errorSection');
     const errorContainer = document.getElementById("errorContainer");
 
-    // Set the error state to prevent further actions
-    isErrorState = true;
-
     fetch("/error/" + errNum, { 
         method: 'GET', 
         credentials: 'include' 
@@ -368,32 +372,34 @@ function errorPage(errNum) {
         return res.text(); // Handle HTML response
     })
     .then(html => {
-        // Update the error container with the HTML response
-        errorContainer.innerHTML = html;
-
+        console.log(html)
         // Show the appropriate error section based on the error number
         switch (errNum) {
             case 400:
                 showSection(errorSection, "/error/400");
+                errorContainer.innerHTML = "<h1>400 Bad Request</h1><p>Your request could not be understood.</p>";
+                isErrorState = true;
                 break;
             case 404:
                 showSection(errorSection, "/error/404");
+                errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
+                isErrorState = true;
                 break;
             case 500:
                 showSection(errorSection, "/error/500");
+                errorContainer.innerHTML = "<h1>500 Internal Server Error</h1><p>Something went wrong.</p>";
+                isErrorState = true;
                 break;   
             default:
                 showSection(errorSection, "/error/404");
+                errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
+                isErrorState = true;
                 break;
         }
     })
     .catch(err => {
         console.error("Failed to fetch error details:", err);
     })
-    .finally(() => {
-        // Reset the error state after handling
-        isErrorState = false;
-    });
 }
 
 // Expose functions globally

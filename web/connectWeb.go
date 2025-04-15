@@ -86,7 +86,7 @@ func ConnectWeb(db *sql.DB) {
 
 		posts, err := database.GetPostsByUserID(db, userID)
 		if err != nil {
-			http.Error(w, "Failed to retrieve posts", http.StatusInternalServerError)
+			e.ErrorHandler(w, r, 500)
 			return
 		}
 
@@ -129,21 +129,21 @@ func ConnectWeb(db *sql.DB) {
 		postIDStr := r.URL.Query().Get("post_id")
 		postID, err := strconv.Atoi(postIDStr)
 		if err != nil || postID <= 0 {
-			http.Error(w, "Invalid post ID", http.StatusBadRequest)
+			e.ErrorHandler(w, r, 400)
 			return
 		}
 
 		// Fetch post details
 		post, err := database.GetPostByPostID(db, postID)
 		if err != nil || len(post) == 0 {
-			http.Error(w, "Post not found", http.StatusNotFound)
+			e.ErrorHandler(w, r, 404)
 			return
 		}
 
 		// Fetch comments
 		comments, err := p.GetCommentsByPostID(db, postID)
 		if err != nil {
-			http.Error(w, "Error fetching comments", http.StatusInternalServerError)
+			e.ErrorHandler(w, r, 500)
 			return
 		}
 
@@ -201,6 +201,7 @@ func ConnectWeb(db *sql.DB) {
 			err := database.DeleteSession(db, cookieINT)
 			if err != nil {
 				fmt.Println(" Error deleting session:", err)
+				e.ErrorHandler(w, r, 500)
 			}
 		}
 
@@ -227,7 +228,7 @@ func ConnectWeb(db *sql.DB) {
 		offsetStr := r.URL.Query().Get("offset")
 		withID, err := strconv.Atoi(withIDStr)
 		if err != nil || withID <= 0 {
-			http.Error(w, "Invalid 'with' parameter", http.StatusBadRequest)
+			e.ErrorHandler(w, r, 404)
 			return
 		}
 		offset, _ := strconv.Atoi(offsetStr)
@@ -237,7 +238,7 @@ func ConnectWeb(db *sql.DB) {
 	          ORDER BY created_at DESC LIMIT 10 OFFSET ?`
 		rows, err := db.Query(query, userID, withID, withID, userID, offset)
 		if err != nil {
-			http.Error(w, "Database error", http.StatusInternalServerError)
+			e.ErrorHandler(w, r, 500)
 			return
 		}
 		defer rows.Close()
@@ -276,6 +277,7 @@ func ConnectWeb(db *sql.DB) {
 			rows, err := db.Query(`SELECT id, username FROM users`)
 			if err != nil {
 				http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
+				e.ErrorHandler(w, r, 500)
 				return
 			}
 			defer rows.Close()
@@ -301,7 +303,9 @@ func ConnectWeb(db *sql.DB) {
 
 	http.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) {
 		num, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/error/"))
-		fmt.Println(num)
+		if r.Method == http.MethodGet {
+			e.ErrorHandler(w, r, num)
+		}
 		if err != nil {
 			e.ErrorHandler(w, r, 500) // If there's an error converting, return a 500 error
 			w.Header().Set("Content-Type", "application/json")

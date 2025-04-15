@@ -469,3 +469,16 @@ input[type="submit"]:hover {
     align-self: flex-start; /* Align to the left */
     text-align: left; /* Left-align text */
 }
+
+#errorContainer{
+    text-align: center;
+    display: flex;
+    flex-direction: column; /* Stack content vertically */
+    align-items: center; /* Center items */
+    width: calc(100% - 300px); /* Full width minus both sidebars */
+    margin: 0 auto; /* Center horizontally */
+    padding: 20px; 
+    background: #f4f4f4;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
