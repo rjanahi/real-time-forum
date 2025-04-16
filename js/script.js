@@ -42,7 +42,9 @@ function showSection(sectionToShow, urlSuffix) {
     // Update the URL
     history.pushState(null, '', urlSuffix);
 }
-
+if(isErrorState){
+    console.warn("Cannot send data; application is in an error state.");
+}else{
 // Consolidated event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
@@ -746,3 +748,4 @@ function toggleDropdown(id) {
     dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; // Toggle visibility
 }
 
+}
