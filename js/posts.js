@@ -127,8 +127,8 @@ function loadMyPosts() {
         .catch(error => errorPage(500));
 }
 
- //load posts with specific category
- function loadCategoryPosts(category) {
+//load posts with specific category
+function loadCategoryPosts(category) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
         return; // Exit if in error state

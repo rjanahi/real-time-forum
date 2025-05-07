@@ -14,7 +14,7 @@ const chatWindow = document.getElementById("chatWindow");
 let currentHeight = 150; // Starting height
 const maxHeight = 200; // Maximum height
 
- function connectWebSocket(userId) {
+function connectWebSocket(userId) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
         return; // Exit if in error state
@@ -27,7 +27,7 @@ const maxHeight = 200; // Maximum height
 
     socket.onmessage = (event) => {
         const msg = JSON.parse(event.data);
-    console.log(msg.type);
+        console.log(msg.type);
         if (msg.type === "typing") {
             if (msg.from === selectedUserId) {
                 showTypingIndicator(Theirname);
@@ -74,7 +74,7 @@ function updateUserStatus(username, status) {
     }
 }
 
- function sendMessage(toId, content) {
+function sendMessage(toId, content) {
     if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
     const message = {
@@ -104,7 +104,7 @@ function sendTypingSignal() {
 
 function showTypingIndicator(username) {
     const container = document.getElementById("chatWindow");
-    
+
     // Check if the typing indicator already exists
     const existingTypingMsg = container.querySelector(".typing-message");
     if (!existingTypingMsg) {
@@ -124,23 +124,23 @@ function showTypingIndicator(username) {
     }, 1000); // Hide after 1 second of inactivity
 }
 
- function loadMessages(withId, offset = 0) {
+function loadMessages(withId, offset = 0) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
         return; // Exit if in error state
     }
-  fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: 'include' })
-  .then(res => res.json())
-  .then(messages => {
-      if (!messages || !Array.isArray(messages)) {
-          console.warn("⚠️ No messages received or invalid format.");
-          return;
-      }
+    fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(messages => {
+            if (!messages || !Array.isArray(messages)) {
+                console.warn("⚠️ No messages received or invalid format.");
+                return;
+            }
 
-      messages.forEach(msg => prependMessageToChat(msg));
-      throttle = false;
-  })
-  .catch(err =>errorPage(500));
+            messages.forEach(msg => prependMessageToChat(msg));
+            throttle = false;
+        })
+        .catch(err => errorPage(500));
 }
 
 function appendMessageToChat(msg) {
@@ -179,7 +179,7 @@ function prependMessageToChat(msg) {
     container.insertBefore(node, container.firstChild);
 }
 
- function setupScroll(chatUserId) {
+function setupScroll(chatUserId) {
     const container = document.getElementsByClassName("chat-window")[0];
     container.addEventListener("scroll", () => {
         if (container.scrollTop === 0 && !throttle) {
@@ -230,7 +230,7 @@ function returnToPosts() {
     history.pushState(null, '', '/posts');
 }
 
- function loadAndInitChat(userId) {
+function loadAndInitChat(userId) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
         return; // Exit if in error state
@@ -248,21 +248,21 @@ function fetchUserList() {
         console.warn("Cannot send data; application is in an error state.");
         return; // Exit if in error state
     }
-    fetch("/get-users", { 
-        method:'GET', 
-        credentials: 'include' 
+    fetch("/get-users", {
+        method: 'GET',
+        credentials: 'include'
     })
-    .then(res => {
-        if (res.status === 401) {
-            console.error("Unauthorized access. Please log in.");
-            return;
-        }
-        if (res.status === 404) {
-            errorPage(404); // Handle user list not found
-            return;
-        }
-        return res.json();
-    })
+        .then(res => {
+            if (res.status === 401) {
+                console.error("Unauthorized access. Please log in.");
+                return;
+            }
+            if (res.status === 404) {
+                errorPage(404); // Handle user list not found
+                return;
+            }
+            return res.json();
+        })
         .then(users => {
             const userList = document.getElementById("userList");
             userList.innerHTML = '';
@@ -270,30 +270,30 @@ function fetchUserList() {
             if (users == null) {
                 // console.log("No users found."); // Optional: Log a message if no users
                 return; // Exit the function if no users are present
-            }else{
+            } else {
                 users.forEach(user => {
-                
+
                     if (user.id !== loggedInUserId) {
                         const li = document.createElement("li");
                         li.dataset.userId = user.id;
                         li.classList.add("user-item");
-    
+
                         // Create username span
                         const usernameSpan = document.createElement("span");
                         usernameSpan.textContent = user.username;
-    
+
                         // Create status dot
                         const statusDot = document.createElement("span");
                         statusDot.classList.add("status-dot");
                         statusDot.classList.add(user.online ? "online" : "offline");
-                        
+
                         // Append elements
                         li.appendChild(usernameSpan);
                         li.appendChild(statusDot);
                         li.onclick = () => openChatWith(user.id, user.username);
-    
+
                         userList.appendChild(li);
-                    } else  {
+                    } else {
                         Myusername = user.username; // Set your username here
                     }
                 });
@@ -301,7 +301,6 @@ function fetchUserList() {
         })
         .catch(err => errorPage(500));
 }
-
 
 function openChatWith(userId, username) {
     Theirname = username;
@@ -364,42 +363,42 @@ function errorPage(errNum) {
     const errorSection = document.getElementById('errorSection');
     const errorContainer = document.getElementById("errorContainer");
 
-    fetch("/error/" + errNum, { 
-        method: 'GET', 
-        credentials: 'include' 
+    fetch("/error/" + errNum, {
+        method: 'GET',
+        credentials: 'include'
     })
-    .then(res => {
-        return res.text(); // Handle HTML response
-    })
-    .then(html => {
-        console.log(html)
-        // Show the appropriate error section based on the error number
-        switch (errNum) {
-            case 400:
-                showSection(errorSection, "/error/400");
-                errorContainer.innerHTML = "<h1>400 Bad Request</h1><p>Your request could not be understood.</p>";
-                isErrorState = true;
-                break;
-            case 404:
-                showSection(errorSection, "/error/404");
-                errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
-                isErrorState = true;
-                break;
-            case 500:
-                showSection(errorSection, "/error/500");
-                errorContainer.innerHTML = "<h1>500 Internal Server Error</h1><p>Something went wrong.</p>";
-                isErrorState = true;
-                break;   
-            default:
-                showSection(errorSection, "/error/404");
-                errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
-                isErrorState = true;
-                break;
-        }
-    })
-    .catch(err => {
-        console.error("Failed to fetch error details:", err);
-    })
+        .then(res => {
+            return res.text(); // Handle HTML response
+        })
+        .then(html => {
+            console.log(html)
+            // Show the appropriate error section based on the error number
+            switch (errNum) {
+                case 400:
+                    showSection(errorSection, "/error/400");
+                    errorContainer.innerHTML = "<h1>400 Bad Request</h1><p>Your request could not be understood.</p>";
+                    isErrorState = true;
+                    break;
+                case 404:
+                    showSection(errorSection, "/error/404");
+                    errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
+                    isErrorState = true;
+                    break;
+                case 500:
+                    showSection(errorSection, "/error/500");
+                    errorContainer.innerHTML = "<h1>500 Internal Server Error</h1><p>Something went wrong.</p>";
+                    isErrorState = true;
+                    break;
+                default:
+                    showSection(errorSection, "/error/404");
+                    errorContainer.innerHTML = "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
+                    isErrorState = true;
+                    break;
+            }
+        })
+        .catch(err => {
+            console.error("Failed to fetch error details:", err);
+        })
 }
 
 // Expose functions globally
