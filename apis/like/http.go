@@ -94,8 +94,6 @@ func (c *LikesController) InteractWithComment(w http.ResponseWriter, r *http.Req
 		return
 	}
 
-	fmt.Printf("🔍 Received like/dislike request for Comment ID: %v, Is Like: %v\n", req.CommentID, req.IsLike)
-
 	if req.CommentID == nil {
 		fmt.Println(" Missing Comment ID")
 		http.Error(w, "Comment ID is required", http.StatusBadRequest)

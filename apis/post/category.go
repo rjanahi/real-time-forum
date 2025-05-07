@@ -43,7 +43,6 @@ func GetPostbyIsLiked(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		http.Error(w, "Unauthorized. Please log in.", http.StatusUnauthorized)
 		return
 	}
-fmt.Println(userID)
 
 	posts, err := database.GetPostIfLiked(db, userID)
 		if err != nil {

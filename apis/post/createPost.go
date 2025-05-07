@@ -53,9 +53,9 @@ func CreatePost(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Insert categories into the database
-	for _, categoryName := range postData.Categories {
-		categoryID, err := database.GetCategoryID(db, categoryName)
+	if len(postData.Categories) < 1 {
+		category := "none"
+		categoryID, err := database.GetCategoryID(db, category)
 		if err != nil {
 			fmt.Println(" Error getting category ID:", err)
 			http.Error(w, "Failed to retrieve category", http.StatusInternalServerError)
@@ -67,6 +67,23 @@ func CreatePost(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			fmt.Println(" Error linking post to category:", err)
 			http.Error(w, "Failed to associate post with category", http.StatusInternalServerError)
 			return
+		}
+	} else {
+		// Insert categories into the database
+		for _, categoryName := range postData.Categories {
+			categoryID, err := database.GetCategoryID(db, categoryName)
+			if err != nil {
+				fmt.Println(" Error getting category ID:", err)
+				http.Error(w, "Failed to retrieve category", http.StatusInternalServerError)
+				return
+			}
+
+			err = database.InsertPostCategory(db, int(postID), categoryID)
+			if err != nil {
+				fmt.Println(" Error linking post to category:", err)
+				http.Error(w, "Failed to associate post with category", http.StatusInternalServerError)
+				return
+			}
 		}
 	}
 
