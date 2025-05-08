@@ -1,7 +1,7 @@
 //load all the posts
 function loadPosts() {
     if (isErrorState) {
-        console.warn("Cannot send data; application is in an error state.");
+        console.warn("loadPosts! Cannot send data; application is in an error state.");
         return; // Exit if in error state
     }
     fetch('/get-posts', {
@@ -65,7 +65,7 @@ function loadPosts() {
 //load only user posts
 function loadMyPosts() {
     if (isErrorState) {
-        console.warn("Cannot send data; application is in an error state.");
+        console.warn("loadMyPosts! Cannot send data; application is in an error state.");
         return; // Exit if in error state
     }
     fetch('/get-myPosts', {
@@ -130,7 +130,7 @@ function loadMyPosts() {
 //load posts with specific category
 function loadCategoryPosts(category) {
     if (isErrorState) {
-        console.warn("Cannot send data; application is in an error state.");
+        console.warn("loadCategoryPosts! Cannot send data; application is in an error state.");
         return; // Exit if in error state
     }
     fetch('/category/' + category, {

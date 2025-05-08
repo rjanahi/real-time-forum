@@ -94,14 +94,6 @@ func ConnectWeb(db *sql.DB) {
 		json.NewEncoder(w).Encode(posts)
 	})
 
-	http.HandleFunc("/posts", func(w http.ResponseWriter, r *http.Request) {
-		if !isAuthenticated(db, r) {
-			http.Redirect(w, r, "/", http.StatusSeeOther)
-			return
-		}
-		mainPageHandler(w, r, db) //  This serves the Create Post page
-	})
-
 	http.HandleFunc("/create-post", func(w http.ResponseWriter, r *http.Request) {
 		if !isAuthenticated(db, r) {
 			http.Redirect(w, r, "/", http.StatusSeeOther)

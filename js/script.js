@@ -43,7 +43,7 @@ function showSection(sectionToShow, urlSuffix) {
     history.pushState(null, '', urlSuffix);
 }
 if(isErrorState){
-    console.warn("Cannot send data; application is in an error state.");
+    console.warn("script.js! Cannot send data; application is in an error state.");
 }else{
 // Consolidated event listener for DOM content loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -105,7 +105,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (registrationForm) {
         registrationForm.addEventListener('submit', function (event) {
             if (isErrorState) {
-                console.warn("Cannot send data; application is in an error state.");
+                console.warn("registrationForm! Cannot send data; application is in an error state.");
                 return; // Exit if in error state
             }
             event.preventDefault(); // Prevent default form submission
@@ -150,7 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', function (event) {
             if (isErrorState) {
-                console.warn("Cannot send data; application is in an error state.");
+                console.warn("loginForm! Cannot send data; application is in an error state.");
                 return; // Exit if in error state
             }
             event.preventDefault(); // Prevent default form submission
@@ -190,7 +190,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (createPostForm) {
         createPostForm.addEventListener('submit', function (event) {
             if (isErrorState) {
-                console.warn("Cannot send data; application is in an error state.");
+                console.warn("createPostForm! Cannot send data; application is in an error state.");
                 return; // Exit if in error state
             }
             event.preventDefault(); // Prevent default form submission
@@ -228,7 +228,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (logoutButton) {
         logoutButton.addEventListener('click', function () {
             if (isErrorState) {
-                console.warn("Cannot send data; application is in an error state.");
+                console.warn("logoutButton! Cannot send data; application is in an error state.");
                 return; // Exit if in error state
             }
             fetch('/logout', {
