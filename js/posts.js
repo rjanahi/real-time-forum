@@ -204,19 +204,6 @@ function loadCategoryPosts(category) {
         .catch(error => errorPage(500));
 }
 
-function appendPostToPage(msg) {
-    const postList = document.getElementById("postList");
-    const newPost = document.createElement("div");
-    newPost.classList.add("post-item");
-    newPost.innerHTML = `
-        <h3>${msg.title}</h3>
-        <p>${msg.content}</p>
-        <small>Posted by User ID: ${msg.from} at ${new Date(msg.timestamp).toLocaleString()}</small>
-    `;
-    postList.prepend(newPost); // Add the new post at the top
-}
-
 window.loadPosts = loadPosts;
 window.loadMyPosts = loadMyPosts;
 window.loadCategoryPosts = loadCategoryPosts;
-window.appendPostToPage = appendPostToPage;

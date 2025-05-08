@@ -16,10 +16,17 @@ const maxHeight = 200; // Maximum height
 
 function connectWebSocket(userId) {
   if (isErrorState) {
-    console.warn("connectWebSocket! Cannot send data; application is in an error state.");
+    console.warn(
+      "connectWebSocket! Cannot send data; application is in an error state."
+    );
     return; // Exit if in error state
   }
+
   socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`);
+
+  socket.onerror = () => {
+    console.log("WebSocket error occurred");
+  };
 
   socket.onopen = () => {
     console.log("WebSocket connected");
@@ -128,7 +135,9 @@ function showTypingIndicator(username) {
 
 function loadMessages(withId, offset = 0) {
   if (isErrorState) {
-    console.warn("loadMessages! Cannot send data; application is in an error state.");
+    console.warn(
+      "loadMessages! Cannot send data; application is in an error state."
+    );
     return; // Exit if in error state
   }
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: "include" })
@@ -244,7 +253,9 @@ function returnToPosts() {
 
 function loadAndInitChat(userId) {
   if (isErrorState) {
-    console.warn("loadAndInitChat! Cannot send data; application is in an error state.");
+    console.warn(
+      "loadAndInitChat! Cannot send data; application is in an error state."
+    );
     return; // Exit if in error state
   }
   loggedInUserId = userId;
@@ -257,7 +268,9 @@ function loadAndInitChat(userId) {
 
 function fetchUserList() {
   if (isErrorState) {
-    console.warn("fetchUserList! Cannot send data; application is in an error state.");
+    console.warn(
+      "fetchUserList! Cannot send data; application is in an error state."
+    );
     return; // Exit if in error state
   }
   fetch("/get-users", {
