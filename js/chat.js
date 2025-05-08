@@ -343,6 +343,7 @@ function updateUserListPeriodically() {
     }
     setInterval(() => {
         fetchUserList(); // Fetch the updated user list
+        loadPosts();
     }, 300); // Update every 5 seconds (adjust as needed)
 }
 
