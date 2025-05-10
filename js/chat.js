@@ -63,10 +63,10 @@ function connectWebSocket(userId) {
 
     if (msg.type === "new_comment") {
       console.log("Post ID:",msg.post_id);
-      if (window.location.pathname === "/comments/" + msg.post_id) {
+      if(window.location.pathname.includes(`${msg.post_id}`)) {
         // If the user is already on the comments page for this post, reload comments 
       loadCommentsForPost(msg.post_id);
-      }
+      
       return;
     }
 
@@ -76,7 +76,7 @@ function connectWebSocket(userId) {
     console.log("WebSocket disconnected");
   };
 }
-
+}
 function updateUserStatus(username, status) {
   const userList = document
     .getElementById("userList")
