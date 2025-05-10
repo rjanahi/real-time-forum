@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 .then(data => {
                     console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
                     if (data.success) createPostForm.reset();
-                    loadPosts();
+                    socket.send(JSON.stringify({ type: "new_post" }));
                     showSection(postPageSection, '/posts');
                 })
                 .catch(error => errorPage(500));

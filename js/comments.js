@@ -1,3 +1,5 @@
+let thisPostId = null;
+
 function loadCommentsForPost(postId) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
@@ -75,7 +77,7 @@ function loadCommentsForPost(postId) {
                 });
             }
 
-
+            
             showSection(commentsSection, `/comment/${postId}`);
 
             if (document.getElementById("return-to-posts")) {
@@ -90,7 +92,6 @@ function loadCommentsForPost(postId) {
 
                 const commentText = document.getElementById("commentText").value.trim();
                 const postID = document.getElementById("postID").value;
-
                 if (!commentText) {
                     console.log(" Comment cannot be empty.");
                     return;
@@ -113,12 +114,14 @@ function loadCommentsForPost(postId) {
                         if (data.success) {
                             //  Clear input field
                             document.getElementById("commentText").value = "";
-
+                            
                             //  Reload comments without redirecting
                             loadCommentsForPost(postID);
                         } else {
                             console.log(" Error: " + data.message);
                         }
+                        socket.send(JSON.stringify({ type: "new_comment" , post_id: parseInt(postID) }));
+
                     })
                     .catch(error => errorPage(500));
             });
@@ -132,3 +135,4 @@ function loadCommentsForPost(postId) {
 }
 
 window.loadCommentsForPost = loadCommentsForPost;
+window.thisPostId = thisPostId;

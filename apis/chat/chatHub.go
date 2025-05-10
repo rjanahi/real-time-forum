@@ -18,7 +18,8 @@ type Message struct {
 	To        int       `json:"to"`
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
-	Type      string    `json:"type"` // "message" or "typing"
+	Type      string    `json:"type"`
+	PostId   int       `json:"post_id"` 
 }
 
 
@@ -138,6 +139,16 @@ func (c *Client) readPump(hub *Hub) {
 			hub.Mutex.RLock()
 			if toClient, ok := hub.Clients[msg.To]; ok {
 				toClient.Send <- msg
+			}
+			hub.Mutex.RUnlock()
+			continue
+		}
+
+		if msg.Type == "new_post" || msg.Type == "new_comment" || msg.Type == "new_like" { 
+			hub.Mutex.RLock()
+			for _, client := range hub.Clients {
+				// Optional: skip sender if you want
+				client.Send <- msg
 			}
 			hub.Mutex.RUnlock()
 			continue

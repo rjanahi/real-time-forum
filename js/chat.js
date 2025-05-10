@@ -56,6 +56,20 @@ function connectWebSocket(userId) {
       fetchUserList(); // Fetch updated user list when a new user is created
       return;
     }
+    if (msg.type === "new_post") {
+      if (window.location.pathname === "/posts")  loadPosts();
+      return;
+  }
+
+    if (msg.type === "new_comment") {
+      console.log("Post ID:",msg.post_id);
+      if (window.location.pathname === "/comments/" + msg.post_id) {
+        // If the user is already on the comments page for this post, reload comments 
+      loadCommentsForPost(msg.post_id);
+      }
+      return;
+    }
+
   };
 
   socket.onclose = () => {
