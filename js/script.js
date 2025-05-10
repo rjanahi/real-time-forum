@@ -62,7 +62,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
     if (loginSignUpButton) loginSignUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if(postMyPageButton)postMyPageButton.addEventListener('click',loadMyPosts);
-    if(postsPageButton)postsPageButton.addEventListener('click',loadPosts); 
+    if(postsPageButton){ 
+        postsPageButton.addEventListener('click', () => {
+            showSection(postPageSection, '/posts');
+            loadPosts();
+        });  
+    }
     if (logoutPostButton) {
         logoutPostButton.addEventListener('click', function () {
             fetch('/logout', {
@@ -89,6 +94,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => {
             const category = button.value; // Get the category from the button's value
             loadCategoryPosts(category);
+            showSection(postPageSection, '/category/' + category); // Show posts of the selected category
         });
     });
 
