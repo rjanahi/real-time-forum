@@ -13,28 +13,29 @@ import (
 	_ "modernc.org/sqlite"
 )
 
-type Message struct {
+type Frontend struct {
 	From      int       `json:"from"`
 	To        int       `json:"to"`
 	Content   string    `json:"content"`
 	Timestamp time.Time `json:"timestamp"`
 	Type      string    `json:"type"`
-	PostId   int       `json:"post_id"` 
+	PostId    int       `json:"post_id"`
+	CommentId int       `json:"comment_id"`
+	isLike    bool      `json:"is_like"`
 }
-
 
 type Client struct {
 	UserID int
 	Conn   *websocket.Conn
-	Send   chan Message
+	Send   chan Frontend
 }
 
 type Hub struct {
 	Clients      map[int]*Client
 	Register     chan *Client
 	Unregister   chan *Client
-	Broadcast    chan Message
-	MessageStore map[string][]Message // key: "user1-user2"
+	Broadcast    chan Frontend
+	MessageStore map[string][]Frontend // key: "user1-user2"
 	Mutex        sync.RWMutex
 	DB           *sql.DB
 }
@@ -48,8 +49,8 @@ func NewHub(db *sql.DB) *Hub {
 		Clients:      make(map[int]*Client),
 		Register:     make(chan *Client),
 		Unregister:   make(chan *Client),
-		Broadcast:    make(chan Message),
-		MessageStore: make(map[string][]Message),
+		Broadcast:    make(chan Frontend),
+		MessageStore: make(map[string][]Frontend),
 		DB:           db,
 	}
 }
@@ -109,8 +110,8 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 		fmt.Println("WebSocket Upgrade Error:", err)
 		return
 	}
-	
-	client := &Client{UserID: userID, Conn: conn, Send: make(chan Message)}
+
+	client := &Client{UserID: userID, Conn: conn, Send: make(chan Frontend)}
 	hub.Register <- client
 
 	go client.writePump()
@@ -129,7 +130,7 @@ func (c *Client) readPump(hub *Hub) {
 			break
 		}
 
-		var msg Message
+		var msg Frontend
 		if err := json.Unmarshal(data, &msg); err != nil {
 			continue
 		}
@@ -144,7 +145,7 @@ func (c *Client) readPump(hub *Hub) {
 			continue
 		}
 
-		if msg.Type == "new_post" || msg.Type == "new_comment" || msg.Type == "new_like" { 
+		if msg.Type == "new_post" || msg.Type == "new_comment" || msg.Type == "new_postLike" || msg.Type == "new_commentLike" {
 			hub.Mutex.RLock()
 			for _, client := range hub.Clients {
 				// Optional: skip sender if you want
@@ -160,7 +161,6 @@ func (c *Client) readPump(hub *Hub) {
 	}
 }
 
-
 func (c *Client) writePump() {
 	for msg := range c.Send {
 		data, _ := json.Marshal(msg)
@@ -168,7 +168,7 @@ func (c *Client) writePump() {
 	}
 }
 
-func (h *Hub) saveMessageToDB(msg Message) error {
+func (h *Hub) saveMessageToDB(msg Frontend) error {
 	query := `INSERT INTO messages (sender_id, receiver_id, content, created_at) VALUES (?, ?, ?, ?)`
 	_, err := h.DB.Exec(query, msg.From, msg.To, msg.Content, msg.Timestamp)
 	return err

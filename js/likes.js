@@ -30,6 +30,7 @@ function likeDislikeComment(commentId, isLike) {
         } else {
             console.log(data.error || "Something went wrong.");
         }
+        socket.send(JSON.stringify({ type: "new_commentLike" , comment_id: parseInt(commentId) , is_like: isLike}));
     })
     .catch(error => errorPage(500));
 }
@@ -58,12 +59,14 @@ function likeDislikePost(postId, isLike) {
         console.log(" Like/Dislike Response:", data);
 
         if (data.message === 'Interaction updated successfully') {
+            
             //  Update UI only after getting the correct values from backend
             likesElement.innerText = `Likes: ${data.likes}`;
             dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
         } else {
             console.log(data.error || "Something went wrong.");
         }
+        socket.send(JSON.stringify({ type: "new_postLike" , post_id: parseInt(postId) , is_like: isLike}));
     })
     .catch(error => {
         console.error(' Error:', error);

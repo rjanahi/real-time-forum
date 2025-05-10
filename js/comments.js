@@ -120,7 +120,8 @@ function loadCommentsForPost(postId) {
                         } else {
                             console.log(" Error: " + data.message);
                         }
-                        socket.send(JSON.stringify({ type: "new_comment" , post_id: parseInt(postID) }));
+                        console.log(" Comment ID:", data.comment_id);
+                        socket.send(JSON.stringify({ type: "new_comment" , post_id: parseInt(postID) , comment_id: data.comment_id}));
 
                     })
                     .catch(error => errorPage(500));

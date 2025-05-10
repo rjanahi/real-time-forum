@@ -57,25 +57,39 @@ function connectWebSocket(userId) {
       return;
     }
     if (msg.type === "new_post") {
-      if (window.location.pathname === "/posts")  loadPosts();
+      if (window.location.pathname === "/posts") {
+        loadPosts();
+      }
       return;
-  }
+    }
 
     if (msg.type === "new_comment") {
-      console.log("Post ID:",msg.post_id);
-      if(window.location.pathname.includes(`${msg.post_id}`)) {
+      console.log("Post ID:", msg.post_id);
+      if (window.location.pathname.includes(`${msg.post_id}`)) {
         // If the user is already on the comments page for this post, reload comments 
-      loadCommentsForPost(msg.post_id);
+        loadCommentsForPost(msg.post_id);
+        return;
+      }
+    };
+
+    if (msg.type === "new_postLike") {
+  
+        getInteractions(msg.post_id);
       
       return;
     }
 
-  };
+    if (msg.type === "new_commentLike") {
+  
+      getInteractions(null,msg.comment_id);
+    
+    return;
+  }
 
-  socket.onclose = () => {
-    console.log("WebSocket disconnected");
-  };
-}
+    socket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+  }
 }
 function updateUserStatus(username, status) {
   const userList = document

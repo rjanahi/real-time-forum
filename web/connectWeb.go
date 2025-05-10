@@ -235,9 +235,9 @@ func ConnectWeb(db *sql.DB) {
 		}
 		defer rows.Close()
 
-		var messages []chat.Message
+		var messages []chat.Frontend
 		for rows.Next() {
-			var m chat.Message
+			var m chat.Frontend
 			if err := rows.Scan(&m.From, &m.To, &m.Content, &m.Timestamp); err == nil {
 				messages = append(messages, m)
 			}
@@ -245,7 +245,7 @@ func ConnectWeb(db *sql.DB) {
 
 		w.Header().Set("Content-Type", "application/json")
 		if messages == nil {
-			messages = []chat.Message{} // ✅ Ensure an empty array is sent instead of `null`
+			messages = []chat.Frontend{}
 		}
 		json.NewEncoder(w).Encode(messages)
 
