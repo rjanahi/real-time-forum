@@ -6,7 +6,12 @@ function connectWebSocket(userId) {
     return; // Exit if in error state
   }
 
-  socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`);
+  if (userId == null || userId == "undefined" || userId == 0){
+    console.log("WebSocket Not connected");
+    return;
+  }
+
+  socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`) ;
 
   socket.onerror = () => {
     console.log("WebSocket error occurred");
