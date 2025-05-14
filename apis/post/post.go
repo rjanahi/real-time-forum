@@ -30,7 +30,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	// Create a slice to hold posts
 	var posts []map[string]interface{}
 
-	// Iterate through rows
+
 	for rows.Next() {
 		var postID int
 		var username, title, content string
@@ -57,7 +57,7 @@ func GetPosts(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			"username":   username,
 			"title":      title,
 			"content":    content,
-			"categories": categories, //  Include categories
+			"categories": categories,
 			"createdAt":  createdAt.Format("2006-01-02 15:04:05"),
 		}
 		posts = append(posts, post)
@@ -86,10 +86,8 @@ func GetPostsID(db *sql.DB, w http.ResponseWriter, r *http.Request)([]int ,error
 	}
 	defer rows.Close()
 
-	// Create a slice to hold posts
 	var posts []int
 
-	// Iterate through rows
 	for rows.Next() {
 		var postID int
 		var username, title, content string

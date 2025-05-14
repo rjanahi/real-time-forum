@@ -7,7 +7,7 @@ import (
 	"net/http"
 	"time"
 
-	database "forum/database" // Ensure your database package is imported
+	database "forum/database"
 
 	"github.com/google/uuid"
 )
@@ -33,8 +33,6 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to parse JSON", http.StatusBadRequest)
 			return
 		}
-
-		fmt.Println(" Parsed Credentials:", credentials)
 
 		// Validate login
 		valid, errorNum := ValidateLog(credentials.UserOremail, credentials.Password, db)

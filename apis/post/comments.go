@@ -80,9 +80,6 @@ func CreateComment(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Log the raw JSON request body
-	fmt.Println(" Received JSON:", string(body))
-
 	// Parse JSON request
 	var requestData struct {
 		PostID  int    `json:"post_id"`
@@ -133,7 +130,6 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
               WHERE c.post_id = ?
               ORDER BY c.created_at ASC`
 
-	fmt.Println(" Fetching comments for Post ID:", postID) //  Debugging log
 	rows, err := db.Query(query, postID)
 	if err != nil {
 		fmt.Println(" Database Query Error:", err)
@@ -144,7 +140,7 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 	var comments []Comment
 	for rows.Next() {
 		var comment Comment
-		err := rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Content, &comment.CreatedAt) //  FIXED: Ensure `createdAt` is included
+		err := rows.Scan(&comment.ID, &comment.UserID, &comment.Username, &comment.Content, &comment.CreatedAt) 
 		if err != nil {
 			fmt.Println(" Row Scanning Error:", err)
 			return nil, err
@@ -157,11 +153,10 @@ func GetCommentsByPostID(db *sql.DB, postID int) ([]Comment, error) {
 		return nil, err
 	}
 
-	// Ensure we return an empty slice instead of nil
+
 	if comments == nil {
 		comments = []Comment{}
 	}
 
-	fmt.Println(" Successfully Retrieved Comments:", comments) //  Debugging log
 	return comments, nil
 }

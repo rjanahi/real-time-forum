@@ -57,7 +57,7 @@ func Register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 	age := strconv.Itoa(userData.Age)
 	gender := userData.Gender
 
-	// Validate user data (you may need to update ValidateUser function accordingly)
+	// Validate user data 
 	validity, errorNum := ValidateUser(username, email, password, fname, lname, gender, age, db)
 	if !validity {
 		var errorMessage string

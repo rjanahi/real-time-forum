@@ -9,7 +9,6 @@ import (
 )
 
 func GetAllUserNames(db *sql.DB) ([]string, error) {
-	// Define the SQL query to select all rows from the users table
 	query := `SELECT username FROM users`
 
 	// Execute the query
@@ -17,7 +16,7 @@ func GetAllUserNames(db *sql.DB) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() // Ensure rows are closed after processing
+	defer rows.Close() 
 
 	// Slice to hold the results
 	var usernames []string
@@ -32,7 +31,6 @@ func GetAllUserNames(db *sql.DB) ([]string, error) {
 }
 
 func GetAllUserEmails(db *sql.DB) ([]string, error) {
-	// Define the SQL query to select all rows from the users table
 	query := `SELECT email FROM users`
 
 	// Execute the query
@@ -40,9 +38,9 @@ func GetAllUserEmails(db *sql.DB) ([]string, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer rows.Close() // Ensure rows are closed after processing
+	defer rows.Close()
 
-	// Slice to hold the results
+
 	var emails []string
 	for rows.Next() {
 		var email string
@@ -60,7 +58,6 @@ func GetUserID(db *sql.DB, username string) (int, error) {
 	err := db.QueryRow(query, username).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// No rows found for the given username
 			return -1, nil
 		}
 		return -1, err
@@ -74,7 +71,6 @@ func GetUsernameUsingID(db *sql.DB, id int) (string, error) {
 	err := db.QueryRow(query, id).Scan(&username)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// No rows found for the given username
 			return "", nil
 		}
 		return "", err
@@ -88,7 +84,6 @@ func GetPostIDbyUserID(db *sql.DB, userID int) (int, error) {
 	err := db.QueryRow(query, userID).Scan(&id)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			// No rows found for the given username
 			return -1, nil
 		}
 		return -1, err

@@ -35,7 +35,7 @@ type Hub struct {
 	Online     chan *Client
 	Offline   chan *Client
 	Broadcast    chan Frontend
-	MessageStore map[string][]Frontend // key: "user1-user2"
+	MessageStore map[string][]Frontend 
 	Mutex        sync.RWMutex
 	DB           *sql.DB
 }
@@ -148,14 +148,13 @@ func (c *Client) readPump(hub *Hub) {
 		if msg.Type == "new_post" || msg.Type == "new_comment" || msg.Type == "new_postLike" || msg.Type == "new_commentLike" {
 			hub.Mutex.RLock()
 			for _, client := range hub.Clients {
-				// Optional: skip sender if you want
+
 				client.Send <- msg
 			}
 			hub.Mutex.RUnlock()
 			continue
 		}
 
-		// Normal message: timestamp and broadcast
 		msg.Timestamp = time.Now()
 		hub.Broadcast <- msg
 	}
