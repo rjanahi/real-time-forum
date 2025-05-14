@@ -32,8 +32,8 @@ type Client struct {
 
 type Hub struct {
 	Clients      map[int]*Client
-	Register     chan *Client
-	Unregister   chan *Client
+	Online     chan *Client
+	Offline   chan *Client
 	Broadcast    chan Frontend
 	MessageStore map[string][]Frontend // key: "user1-user2"
 	Mutex        sync.RWMutex
@@ -47,8 +47,8 @@ var upgrader = websocket.Upgrader{
 func NewHub(db *sql.DB) *Hub {
 	return &Hub{
 		Clients:      make(map[int]*Client),
-		Register:     make(chan *Client),
-		Unregister:   make(chan *Client),
+		Online:     make(chan *Client),
+		Offline:   make(chan *Client),
 		Broadcast:    make(chan Frontend),
 		MessageStore: make(map[string][]Frontend),
 		DB:           db,
@@ -58,11 +58,11 @@ func NewHub(db *sql.DB) *Hub {
 func (h *Hub) Run() {
 	for {
 		select {
-		case client := <-h.Register:
+		case client := <-h.Online:
 			h.Mutex.Lock()
 			h.Clients[client.UserID] = client
 			h.Mutex.Unlock()
-		case client := <-h.Unregister:
+		case client := <-h.Offline:
 			h.Mutex.Lock()
 			delete(h.Clients, client.UserID)
 			h.Mutex.Unlock()
@@ -112,7 +112,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 	}
 
 	client := &Client{UserID: userID, Conn: conn, Send: make(chan Frontend)}
-	hub.Register <- client
+	hub.Online <- client
 
 	go client.writePump()
 	go client.readPump(hub)
@@ -120,7 +120,7 @@ func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
 
 func (c *Client) readPump(hub *Hub) {
 	defer func() {
-		hub.Unregister <- c
+		hub.Offline <- c
 		c.Conn.Close()
 	}()
 
