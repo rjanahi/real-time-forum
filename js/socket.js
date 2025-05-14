@@ -3,7 +3,7 @@ function connectWebSocket(userId) {
     console.warn(
       "connectWebSocket! Cannot send data; application is in an error state."
     );
-    return; // Exit if in error state
+    return;
   }
 
   if (userId == null || userId == "undefined" || userId == 0){
@@ -41,7 +41,7 @@ function connectWebSocket(userId) {
     }
 
     if (msg.type === "new_user") {
-      fetchUserList(); // Fetch updated user list when a new user is created
+      fetchUserList();
       return;
     }
     if (msg.type === "new_post") {
@@ -54,7 +54,6 @@ function connectWebSocket(userId) {
     if (msg.type === "new_comment") {
       console.log("Post ID:", msg.post_id);
       if (window.location.pathname.includes(`${msg.post_id}`)) {
-        // If the user is already on the comments page for this post, reload comments 
         loadCommentsForPost(msg.post_id);
         return;
       }

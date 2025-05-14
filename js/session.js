@@ -1,7 +1,7 @@
 function checkSession() {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     fetch('/check-session', {
         method: 'GET',

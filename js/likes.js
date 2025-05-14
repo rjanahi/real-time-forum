@@ -1,7 +1,7 @@
 function likeDislikeComment(commentId, isLike) {
     if (isErrorState) {
         console.warn("LIKEDIS COMMENT. Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     console.log(` Sending Like/Dislike request for Comment ID: ${commentId}, Is Like: ${isLike}`);
 
@@ -38,7 +38,7 @@ function likeDislikeComment(commentId, isLike) {
 function likeDislikePost(postId, isLike) {
     if (isErrorState) {
         console.warn("LIKEDIS POST. Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     let likesElement = document.getElementById(`likesCountPost${postId}`);
     let dislikesElement = document.getElementById(`dislikesCountPost${postId}`);
@@ -77,11 +77,9 @@ function likeDislikePost(postId, isLike) {
 function getInteractions(postId, commentId = null) {
     if (isErrorState) {
         console.warn("GET INTER. Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
-    let requestBody = commentId 
-        ? { comment_id: commentId } // Fetch comment interactions
-        : { post_id: postId };      // Fetch post interactions
+    let requestBody = commentId ? { comment_id: commentId } : { post_id: postId }; 
 
     fetch('/getInteractions', {
         method: 'POST',

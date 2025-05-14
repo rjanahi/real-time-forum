@@ -2,7 +2,7 @@
 function loadPosts() {
     if (isErrorState) {
         console.warn("loadPosts! Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     fetch('/get-posts', {
         method: 'GET',
@@ -66,7 +66,7 @@ function loadPosts() {
 function loadMyPosts() {
     if (isErrorState) {
         console.warn("loadMyPosts! Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     fetch('/get-myPosts', {
         method: 'GET',
@@ -131,7 +131,7 @@ function loadMyPosts() {
 function loadCategoryPosts(category) {
     if (isErrorState) {
         console.warn("loadCategoryPosts! Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     fetch('/category/' + category, {
         method: 'GET',
@@ -150,11 +150,7 @@ function loadCategoryPosts(category) {
         })
         .then(posts => {
             const postContainer = document.querySelector('.container-post');
-
-            // Debugging: Log the postContainer to check if it's null
-            console.log('Post container:', postContainer);
-
-            // Check if postContainer is null
+            
             if (!postContainer) {
                 console.error("Post container not found!");
                 return;

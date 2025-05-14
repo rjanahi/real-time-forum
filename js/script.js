@@ -45,10 +45,10 @@ function showSection(sectionToShow, urlSuffix) {
 if(isErrorState){
     console.warn("script.js! Cannot send data; application is in an error state.");
 }else{
-// Consolidated event listener for DOM content loaded
+
 document.addEventListener('DOMContentLoaded', () => {
     checkSession();
-    loadAndInitChat(userID); // Your custom chat setup function
+    loadAndInitChat(userID);
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
@@ -87,7 +87,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (openChatButton) {
         openChatButton.addEventListener('click', () => {
             showSection(document.getElementById('chatSection'), '/chat');
-            loadAndInitChat(userID); // Your custom chat setup function
+            loadAndInitChat(userID);
         });
     }
     categoryButtons.forEach(button => {
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
         registrationForm.addEventListener('submit', function (event) {
             if (isErrorState) {
                 console.warn("registrationForm! Cannot send data; application is in an error state.");
-                return; // Exit if in error state
+                return; 
             }
             event.preventDefault(); // Prevent default form submission
 
@@ -140,6 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     feedbackMessage.textContent = data.success ? 'Registration successful!' : (data.message || 'Registration failed.');
                     feedbackMessage.style.color = data.success ? 'green' : 'red';
                     if (data.success) {
+                        feedbackMessage.textContent = '';
                         registrationForm.reset();
                         showSection(logInSection, '/login'); // Navigate to login section
                     }
@@ -157,7 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
         loginForm.addEventListener('submit', function (event) {
             if (isErrorState) {
                 console.warn("loginForm! Cannot send data; application is in an error state.");
-                return; // Exit if in error state
+                return; 
             }
             event.preventDefault(); // Prevent default form submission
     
@@ -197,7 +198,7 @@ document.addEventListener('DOMContentLoaded', () => {
         createPostForm.addEventListener('submit', function (event) {
             if (isErrorState) {
                 console.warn("createPostForm! Cannot send data; application is in an error state.");
-                return; // Exit if in error state
+                return; 
             }
             event.preventDefault(); // Prevent default form submission
 
@@ -235,7 +236,7 @@ document.addEventListener('DOMContentLoaded', () => {
         logoutButton.addEventListener('click', function () {
             if (isErrorState) {
                 console.warn("logoutButton! Cannot send data; application is in an error state.");
-                return; // Exit if in error state
+                return; 
             }
             fetch('/logout', {
                 method: 'POST',

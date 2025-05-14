@@ -3,7 +3,7 @@ let thisPostId = null;
 function loadCommentsForPost(postId) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
-        return; // Exit if in error state
+        return; 
     }
     fetch(`/comments?post_id=${postId}`, {
         method: 'GET',
@@ -12,7 +12,7 @@ function loadCommentsForPost(postId) {
     })
         .then(response => {
             if (response.status === 404) {
-                errorPage(404); // Handle comments not found
+                errorPage(404);
                 return;
             }
             if (!response.ok) {
@@ -83,7 +83,7 @@ function loadCommentsForPost(postId) {
             if (document.getElementById("return-to-posts")) {
                 document.getElementById("return-to-posts").addEventListener('click', () => {
                     showSection(postPageSection, `/posts`);
-                    loadPosts(); //  Ensure posts are loaded
+                    loadPosts(); 
                 });
             }
 

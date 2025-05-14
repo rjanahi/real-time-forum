@@ -9,11 +9,11 @@ function errorPage(errNum) {
     credentials: "include",
   })
     .then((res) => {
-      return res.text(); // Handle HTML response
+      return res.text();
     })
     .then((html) => {
       console.log(html);
-      // Show the appropriate error section based on the error number
+      // Show the error section based on the error number
       switch (errNum) {
         case 400:
           showSection(errorSection, "/error/400");

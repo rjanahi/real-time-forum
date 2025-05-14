@@ -265,15 +265,14 @@ function setupScroll(chatUserId) {
     if (container.scrollTop === 0 && !throttle) {
       throttle = true;
       if (currentHeight < maxHeight) {
-        currentHeight += 10; // Increase height by 10
-        container.style.height = `${currentHeight}px`; // Apply new height
+        currentHeight += 10;
+        container.style.height = `${currentHeight}px`; 
       }
       currentOffset += 10;
       loadMessages(chatUserId, currentOffset);
-      // Reset throttle after loading messages
       setTimeout(() => {
-        throttle = false; // Allow scrolling again after a short delay
-      }, 1500); // Adjust the delay as needed
+        throttle = false;
+      }, 1500);
     }
   });
 }
@@ -298,12 +297,12 @@ function returnToPosts() {
 function updateUserListPeriodically() {
   if (isErrorState) {
     console.warn("Cannot send data; application is in an error state.");
-    return; // Exit if in error state
+    return;
   }
 
   setInterval(() => {
     fetchUserList(); // Fetch the updated user list
-  }, 300); // Update every 5 seconds (adjust as needed)
+  }, 300);
 }
 
 function showSection(sectionToShow, urlSuffix) {
