@@ -18,7 +18,7 @@ function fetchUserList() {
     console.warn(
       "fetchUserList! Cannot send data; application is in an error state."
     );
-    return; // Exit if in error state
+    return; 
   }
   fetch("/get-users", {
     method: "GET",
@@ -30,7 +30,7 @@ function fetchUserList() {
         return;
       }
       if (res.status === 404) {
-        errorPage(404); // Handle user list not found
+        errorPage(404); 
         return;
       }
       return res.json();
@@ -40,8 +40,8 @@ function fetchUserList() {
       userList.innerHTML = "";
 
       if (users == null) {
-        // console.log("No users found."); // Optional: Log a message if no users
-        return; // Exit the function if no users are present
+
+        return; 
       } else {
         users.forEach((user) => {
           if (user.id !== loggedInUserId) {
@@ -65,7 +65,7 @@ function fetchUserList() {
 
             userList.appendChild(li);
           } else {
-            Myusername = user.username; // Set your username here
+            Myusername = user.username;
           }
         });
       }
@@ -78,7 +78,7 @@ function setupChatForm() {
   const chatInput = document.getElementById("chatInput");
 
   chatForm.addEventListener("submit", (e) => {
-    e.preventDefault(); // Prevents page reload
+    e.preventDefault();
     const content = chatInput.value.trim();
     if (content && selectedUserId) {
       sendMessage(selectedUserId, content);
@@ -96,7 +96,7 @@ function loadMessages(withId, offset = 0) {
     console.warn(
       "loadMessages! Cannot send data; application is in an error state."
     );
-    return; // Exit if in error state
+    return; 
   }
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: "include" })
     .then((res) => res.json())
@@ -117,14 +117,14 @@ function prependMessageToChat(msg) {
   const node = document.createElement("div");
   node.classList.add("chat-message");
 
-  // Determine the alignment based on the sender
+
   if (msg.from === loggedInUserId) {
-    node.classList.add("my-message"); // User's message
+    node.classList.add("my-message");
     node.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   } else {
-    node.classList.add("received-message"); // Received message
+    node.classList.add("received-message");
     node.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
@@ -210,16 +210,16 @@ function showTypingIndicator(username) {
     typingNode.classList.add("typing-message");
     typingNode.textContent = `${username} is typing...`;
     container.appendChild(typingNode);
-    container.scrollTop = container.scrollHeight; // Scroll to the bottom
+    container.scrollTop = container.scrollHeight;
   }
 
   // Reset the timeout for hiding the indicator
   if (typingTimeout) clearTimeout(typingTimeout);
   typingTimeout = setTimeout(() => {
     if (existingTypingMsg) {
-      existingTypingMsg.remove(); // Remove typing message
+      existingTypingMsg.remove();
     }
-  }, 1000); // Hide after 1 second of inactivity
+  }, 1000);
 }
 
 function appendMessageToChat(msg) {
@@ -228,20 +228,20 @@ function appendMessageToChat(msg) {
   newMessage.classList.add("chat-message");
 
   if (msg.from === loggedInUserId) {
-    newMessage.classList.add("my-message"); // User's message
+    newMessage.classList.add("my-message");
     newMessage.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   } else {
-    newMessage.classList.add("received-message"); // Received message
+    newMessage.classList.add("received-message");
     newMessage.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   }
 
   // Append the new message instead of prepending
-  messagesContainer.append(newMessage); // Use append() instead of prepend()
-  messagesContainer.scrollTop = messagesContainer.scrollHeight; // Scroll to the bottom
+  messagesContainer.append(newMessage); 
+  messagesContainer.scrollTop = messagesContainer.scrollHeight; 
 }
 
 function loadAndInitChat(userId) {
@@ -249,7 +249,7 @@ function loadAndInitChat(userId) {
     console.warn(
       "loadAndInitChat! Cannot send data; application is in an error state."
     );
-    return; // Exit if in error state
+    return; 
   }
   loggedInUserId = userId;
   connectWebSocket(userId);
@@ -301,7 +301,7 @@ function updateUserListPeriodically() {
   }
 
   setInterval(() => {
-    fetchUserList(); // Fetch the updated user list
+    fetchUserList();
   }, 300);
 }
 
