@@ -32,10 +32,10 @@ type Client struct {
 
 type Hub struct {
 	Clients      map[int]*Client
-	Online     chan *Client
-	Offline   chan *Client
+	Online       chan *Client
+	Offline      chan *Client
 	Broadcast    chan Frontend
-	MessageStore map[string][]Frontend 
+	MessageStore map[string][]Frontend
 	Mutex        sync.RWMutex
 	DB           *sql.DB
 }
@@ -47,8 +47,8 @@ var upgrader = websocket.Upgrader{
 func NewHub(db *sql.DB) *Hub {
 	return &Hub{
 		Clients:      make(map[int]*Client),
-		Online:     make(chan *Client),
-		Offline:   make(chan *Client),
+		Online:       make(chan *Client),
+		Offline:      make(chan *Client),
 		Broadcast:    make(chan Frontend),
 		MessageStore: make(map[string][]Frontend),
 		DB:           db,
