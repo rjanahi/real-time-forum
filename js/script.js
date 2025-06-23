@@ -19,7 +19,6 @@ const aboutUsButton = document.getElementById('aboutUsButton');
 const returnToPost = document.getElementById("return-to-post");
 const sendCommentButton = document.getElementById("sendCommentButton");
 const loginSignUpButton = document.getElementById('signUpButtonLogin');
-const logoutPostButton = document.getElementById('logoutPostButton');
 const postMyPageButton = document.getElementById('postMyPageButton');
 const categoryButtons = document.querySelectorAll('#categoryOptions .button-side');
 
@@ -67,23 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
             loadPosts();
         });  
     }
-    if (logoutPostButton) {
-        logoutPostButton.addEventListener('click', function () {
-            fetch('/logout', {
-                method: 'POST',
-                credentials: 'include'
-            })
-            .then(response => response.json())
-            .then(data => {
-                console.log(data.message);
-                socket.send(JSON.stringify({ type: "new_user" }));
-                disconnectWeb();
-                checkSession(); // Refresh UI
-                showSection(mainSection, '/'); // Redirect to main page
-            })
-            .catch(error => errorPage(500));
-        });
-    }
+
    
     categoryButtons.forEach(button => {
         button.addEventListener('click', () => {
@@ -230,10 +213,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Logout functionality
     if (logoutButton) {
         logoutButton.addEventListener('click', function () {
-            if (isErrorState) {
-                console.warn("logoutButton! Cannot send data; application is in an error state.");
-                return; 
-            }
+
             fetch('/logout', {
                 method: 'POST',
                 credentials: 'include'
