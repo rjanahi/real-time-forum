@@ -1,5 +1,4 @@
 // chat.js
-let socket = null;
 let loggedInUserId = null;
 let selectedUserId = null;
 let typingTimeout = null;
@@ -9,17 +8,61 @@ let throttle = false;
 let Myusername;
 let Theirname;
 
+// const createGroupButton = document.getElementById("createGroupButton");
+// const groupContainer = document.getElementById("group-container");
+const chatMain = document.getElementById("chat-main");
 const chatWindow = document.getElementById("chatWindow");
+const openChatButton = document.getElementById('openChatButton');
+
 let currentHeight = 150; // Starting height
 const maxHeight = 200; // Maximum height
+let socket;
+
+//todo: create a group with selected users
+// if (createGroupButton) {
+//   createGroupButton.addEventListener('click', () => {
+//     const groupContainer = document.getElementById("group-container");
+//     const groupMembers = document.getElementById("groupMembers");
+//     const createGroupForm = document.getElementById("createGroupForm");
+
+//     chatMain.style.display = "none";
+//     groupContainer.removeAttribute("hidden");
+
+//     // fetchUserListGroup(); // Populate user checkboxes
+//     // groupMembers.innerHTML = ""; // Clear previous members
+
+//     // Avoid attaching multiple submit handlers
+//     createGroupForm.onsubmit = (e) => {
+//       e.preventDefault();
+
+//       const groupNameInput = document.getElementById("groupName");
+//       const groupName = groupNameInput.value.trim();
+
+//       if (!groupName) return;
+
+//       const selectedUsers = [];
+//       document.querySelectorAll('input[name="user"]:checked').forEach((checkbox) => {
+//         selectedUsers.push(checkbox.value);
+//       });
+
+//       // TODO: Ask private users first
+//       // TODO: Create group with selected users
+//       // TODO: Send notifications
+
+//       console.log("Creating group:", groupName, "with users:", selectedUsers);
+//       // createGroup(groupName, selectedUsers); // uncomment when implemented
+
+//       // Reset UI
+//       groupNameInput.value = "";
+//       createGroupForm.reset();
+//       groupContainer.setAttribute("hidden", "true");
+//       chatMain.style.display = "block";
+//     };
+//   });
+// }
+
 
 function fetchUserList() {
-  if (isErrorState) {
-    console.warn(
-      "fetchUserList! Cannot send data; application is in an error state."
-    );
-    return; 
-  }
   fetch("/get-users", {
     method: "GET",
     credentials: "include",
@@ -30,7 +73,7 @@ function fetchUserList() {
         return;
       }
       if (res.status === 404) {
-        errorPage(404); 
+        console.log(error);
         return;
       }
       return res.json();
@@ -41,7 +84,7 @@ function fetchUserList() {
 
       if (users == null) {
 
-        return; 
+        return;
       } else {
         users.forEach((user) => {
           if (user.id !== loggedInUserId) {
@@ -61,8 +104,9 @@ function fetchUserList() {
             // Append elements
             li.appendChild(usernameSpan);
             li.appendChild(statusDot);
-            li.onclick = () => openChatWith(user.id, user.username);
-
+            if(user.online === true){
+              li.onclick = () => openChatWith(user.id, user.username);
+            }
             userList.appendChild(li);
           } else {
             Myusername = user.username;
@@ -70,8 +114,57 @@ function fetchUserList() {
         });
       }
     })
-    .catch((err) => errorPage(500));
+    .catch((err) => console.log(err));
 }
+
+function fetchUserListGroup() {
+
+  fetch("/get-users", {
+    method: "GET",
+    credentials: "include",
+  })
+    .then((res) => {
+      if (res.status === 401) {
+        console.error("Unauthorized access. Please log in.");
+        return;
+      }
+      if (res.status === 404) {
+        console.log(error);
+        return;
+      }
+      return res.json();
+    })
+    .then((users) => {
+      const userList = document.getElementById("groupMembers");
+      userList.innerHTML = "";
+
+      if (!users) return;
+
+      users.forEach((user) => {
+        //only show public users or/and private users that follow back
+        if (user.id !== loggedInUserId && user.isPrivate !== false||user.isPrivate === true && user.isFollowing) {
+          const label = document.createElement("label");
+          label.style.display = "block";
+
+          const checkbox = document.createElement("input");
+          checkbox.type = "checkbox";
+          checkbox.name = "user";
+          checkbox.value = user.id;
+
+          const textNode = document.createTextNode(` ${user.username}`);
+
+          label.appendChild(checkbox);
+          label.appendChild(textNode);
+
+          userList.appendChild(label);
+        } else {
+          Myusername = user.username;
+        }
+      });
+    })
+    .catch((err) => console.log(err));
+}
+
 
 function setupChatForm() {
   const chatForm = document.getElementById("chatForm");
@@ -92,12 +185,7 @@ function setupChatForm() {
 }
 
 function loadMessages(withId, offset = 0) {
-  if (isErrorState) {
-    console.warn(
-      "loadMessages! Cannot send data; application is in an error state."
-    );
-    return; 
-  }
+
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: "include" })
     .then((res) => res.json())
     .then((messages) => {
@@ -109,7 +197,7 @@ function loadMessages(withId, offset = 0) {
       messages.forEach((msg) => prependMessageToChat(msg));
       throttle = false;
     })
-    .catch((err) => errorPage(500));
+    .catch((err) => console.log(err));
 }
 
 function prependMessageToChat(msg) {
@@ -149,12 +237,14 @@ function updateUserStatus(username, status) {
         statusDot.classList.add("offline");
         statusDot.classList.remove("online");
       }
-      break; 
+      break;
     }
   }
 }
 
 function openChatWith(userId, username) {
+  // groupContainer.setAttribute("hidden", "true");
+  chatMain.style.display = "block";
   Theirname = username;
   selectedUserId = userId;
   currentOffset = 0;
@@ -163,10 +253,7 @@ function openChatWith(userId, username) {
   document.getElementById(
     "chatWithLabel"
   ).textContent = `Chat with ${username}`;
-  showSection("chatSection","/chat");
 
-  const chatForm = document.getElementById("chatForm");
-  chatForm.style.display = "flex";
 
   loadMessages(userId);
   setupScroll(userId);
@@ -240,17 +327,20 @@ function appendMessageToChat(msg) {
   }
 
   // Append the new message instead of prepending
-  messagesContainer.append(newMessage); 
-  messagesContainer.scrollTop = messagesContainer.scrollHeight; 
+  messagesContainer.append(newMessage);
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+function updateUserListPeriodically() {
+
+
+  setInterval(() => {
+    fetchUserList();
+  }, 300);
 }
 
 function loadAndInitChat(userId) {
-  if (isErrorState) {
-    console.warn(
-      "loadAndInitChat! Cannot send data; application is in an error state."
-    );
-    return; 
-  }
+
   loggedInUserId = userId;
   connectWebSocket(userId);
   fetchUserList();
@@ -266,7 +356,7 @@ function setupScroll(chatUserId) {
       throttle = true;
       if (currentHeight < maxHeight) {
         currentHeight += 10;
-        container.style.height = `${currentHeight}px`; 
+        container.style.height = `${currentHeight}px`;
       }
       currentOffset += 10;
       loadMessages(chatUserId, currentOffset);
@@ -294,26 +384,24 @@ function returnToPosts() {
   history.pushState(null, "", "/posts");
 }
 
-function updateUserListPeriodically() {
-  if (isErrorState) {
-    console.warn("Cannot send data; application is in an error state.");
-    return;
-  }
 
-  setInterval(() => {
-    fetchUserList();
-  }, 300);
-}
 
-function showSection(sectionToShow, urlSuffix) {
-  hideAllSections();
-  sectionToShow.hidden = false;
 
-  // Update the URL
-  history.pushState(null, "", urlSuffix);
-}
+    if (openChatButton) {
+        openChatButton.addEventListener('click', () => {
+        loadAndInitChat(userID);
+            window.location.href='/chat';
+            loadAndInitChat(userID);
+        });
+    }
 
+    function closeChat() {
+        chatMain.style.display = "none";
+        // groupContainer.setAttribute("hidden", "true");
+        document.getElementById("chatWindow").innerHTML = "";
+      }
 // Expose functions globally
 window.returnToPosts = returnToPosts;
 window.loadAndInitChat = loadAndInitChat;
+window.closeChat = closeChat;
 

@@ -22,7 +22,6 @@ const loginSignUpButton = document.getElementById('signUpButtonLogin');
 const logoutPostButton = document.getElementById('logoutPostButton');
 const postMyPageButton = document.getElementById('postMyPageButton');
 const categoryButtons = document.querySelectorAll('#categoryOptions .button-side');
-const openChatButton = document.getElementById('openChatButton');
 
 let userID = 0;
 let Chatusername;
@@ -77,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 console.log(data.message);
+                socket.send(JSON.stringify({ type: "new_user" }));
                 disconnectWeb();
                 checkSession(); // Refresh UI
                 showSection(mainSection, '/'); // Redirect to main page
@@ -84,12 +84,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .catch(error => errorPage(500));
         });
     }
-    if (openChatButton) {
-        openChatButton.addEventListener('click', () => {
-            showSection(document.getElementById('chatSection'), '/chat');
-            loadAndInitChat(userID);
-        });
-    }
+   
     categoryButtons.forEach(button => {
         button.addEventListener('click', () => {
             const category = button.value; // Get the category from the button's value
@@ -180,6 +175,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     Chatusername = data.username;
                     checkSession(); // Refresh session check
                     loginForm.reset();
+                    socket.send(JSON.stringify({ type: "new_user" }));
                     showSection(postPageSection, '/posts'); // Navigate to posts section
                     loadPosts(); // Load posts after navigating to the posts section
                 } else {
@@ -245,6 +241,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(response => response.json())
             .then(data => {
                 console.log(data.message);
+                socket.send(JSON.stringify({ type: "new_user" }));
                 checkSession(); // Refresh session check to update UI
                 showSection(mainSection, '/'); // Redirect to main page after logout
             })

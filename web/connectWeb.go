@@ -308,8 +308,8 @@ func ConnectWeb(db *sql.DB) {
 
 	})
 
-	fmt.Println("Listening on: http://localhost:8888/")
-	if err := http.ListenAndServe("0.0.0.0:8888", nil); err != nil {
+	fmt.Println("Listening on: http://localhost:8080/")
+	if err := http.ListenAndServe("0.0.0.0:8080", nil); err != nil {
 		fmt.Println("Error starting server:", err)
 	}
 }

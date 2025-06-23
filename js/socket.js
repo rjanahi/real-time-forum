@@ -11,7 +11,7 @@ function connectWebSocket(userId) {
     return;
   }
 
-  socket = new WebSocket(`ws://localhost:8888/ws?user_id=${userId}`) ;
+  socket = new WebSocket(`ws://localhost:8080/ws?user_id=${userId}`) ;
 
   socket.onerror = () => {
     console.log("WebSocket error occurred");
@@ -44,6 +44,7 @@ function connectWebSocket(userId) {
       fetchUserList();
       return;
     }
+    
     if (msg.type === "new_post") {
       if (window.location.pathname === "/posts") {
         loadPosts();
