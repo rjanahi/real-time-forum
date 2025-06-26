@@ -62,8 +62,11 @@ function connectWebSocket(userId) {
 
     if (msg.type === "new_postLike") {
   
-        getInteractions(msg.post_id);
-      
+      getInteractions(msg.post_id);
+      if( window.location.pathname.includes(`Liked`)) {
+       
+        loadCategoryPosts('Liked');
+      }
       return;
     }
 
