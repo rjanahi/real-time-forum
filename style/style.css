@@ -387,18 +387,15 @@ input[type="submit"]:hover {
 #chat-main {
     position: fixed;
     bottom: 20px;
-    right: 20px;
+    right: 150px;
     width: 300px;
-    height: 400px;
     background-color: white;
     border: 1px solid #ccc;
     border-radius: 10px 10px 0 0;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
-    z-index: 1000;
-    overflow: hidden;
-    /* Prevent overflow scrollbars */
+    z-index: 500;
 }
 
 #chat-main{
@@ -441,22 +438,14 @@ input[type="submit"]:hover {
   color: #ccc;
 }
 
-
 /* Chat messages area */
 .chat-window {
-    flex-grow: 1;
     overflow-y: auto;
+    max-height: 300px;
     padding: 10px;
     background-color: #f0f0f0;
     display: flex;
     flex-direction: column;
-}
-
-/* Messages */
-.messages-container {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
 }
 
 /* Fixed chat input form */
@@ -534,41 +523,33 @@ input[type="submit"]:hover {
 
 .online {
     background-color: green;
-    /* ✅ Green dot for online users */
 }
 
 .offline {
     background-color: gray;
-    /* ⚪ Gray dot for offline users */
 }
-
-/* Style for online user highlight in sidebar */
-
 
 .messages-container {
     transition: transform 0.3s ease-in-out;
-    /* Smooth transition */
+
     display: flex;
     flex-direction: column;
-    /* Stack messages vertically */
+
 }
 
 .my-message {
     background-color: #d1e7dd;
-    /* Light green for sent messages */
     align-self: flex-end;
-    /* Align to the right */
     text-align: right;
-    /* Right-align text */
+    margin: 2px;
 }
 
 .received-message {
     background-color: #f8d7da;
-    /* Light red for received messages */
     align-self: flex-start;
-    /* Align to the left */
     text-align: left;
-    /* Left-align text */
+    margin: 2px;
+
 }
 
 #errorContainer {

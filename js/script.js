@@ -165,6 +165,7 @@ if (isErrorState) {
                                 socket.send(JSON.stringify({ type: "new_user" }));
                             }
                             showSection(postPageSection, '/posts'); // Navigate to posts section
+                            loadPosts();
                         } else {
                             const error = document.getElementById("logerror")
                             error.innerHTML = data.message;

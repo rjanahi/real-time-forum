@@ -3,7 +3,7 @@ let isErrorState = false;
 function errorPage(errNum) {
   const errorSection = document.getElementById("errorSection");
   const errorContainer = document.getElementById("errorContainer");
-
+  const show = document.getElementById('show');
   fetch("/error/" + errNum, {
     method: "GET",
     credentials: "include",
@@ -13,6 +13,7 @@ function errorPage(errNum) {
     })
     .then((html) => {
       console.log(html);
+      show.hidden = true;
       // Show the error section based on the error number
       switch (errNum) {
         case 400:
