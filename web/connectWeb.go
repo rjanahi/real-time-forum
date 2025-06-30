@@ -252,7 +252,6 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/get-users", func(w http.ResponseWriter, r *http.Request) {
-		// 1) Authenticate
 		userID, loggedIn := u.ValidateSession(db, r)
 		if !loggedIn {
 			var empty []map[string]interface{}
@@ -261,14 +260,11 @@ func ConnectWeb(db *sql.DB) {
 			return
 		}
 
-		// 2) Only allow GET
 		if r.Method != http.MethodGet {
 			http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 			return
 		}
 
-		// 3) Populate onlineSet here…
-		//    – pull the list of IDs currently connected over WebSocket
 		onlineIDs := chatHub.GetOnlineUserIDs()
 		onlineSet := make(map[int]bool)
 		for _, id := range onlineIDs {
@@ -278,15 +274,17 @@ func ConnectWeb(db *sql.DB) {
 		// 4) Fetch & order users by last-message timestamp, then alphabetically
 		rows, err := db.Query(`
         SELECT u.id, u.username
-          FROM users u
-          LEFT JOIN messages m
-            ON ( (m.sender_id   = ? AND m.receiver_id = u.id)
-              OR (m.sender_id   = u.id AND m.receiver_id = ?) )
-         WHERE u.id != ?
-         GROUP BY u.id, u.username
-         ORDER BY
-           MAX(m.created_at) DESC,
-           u.username       ASC
+		FROM users u
+		WHERE u.id <> ?
+		ORDER BY
+  		(
+    		SELECT MAX(m.created_at)
+    		FROM messages m
+    		WHERE
+    		  (m.sender_id   = ? AND m.receiver_id = u.id)
+    		  OR
+    		  (m.sender_id   = u.id   AND m.receiver_id = ?)
+		) DESC,	u.username ASC;
     `, userID, userID, userID)
 		if err != nil {
 			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)
@@ -294,7 +292,6 @@ func ConnectWeb(db *sql.DB) {
 		}
 		defer rows.Close()
 
-		// 5) Build and send response
 		var users []map[string]interface{}
 		for rows.Next() {
 			var id int
