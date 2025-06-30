@@ -90,7 +90,6 @@ function setupChatForm() {
   });
 
   chatInput.addEventListener("input", () => {
-    chatWindow.scrollTop = chatWindow.scrollHeight;
     sendTypingSignal();
   });
 }
