@@ -111,7 +111,7 @@ func Register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 func checkIfUsernameExists(db *sql.DB, username string) bool {
 	usernames, _ := database.GetAllUserNames(db)
 	for _, user := range usernames {
-		if username == user {
+		if strings.EqualFold(username, user) {
 			return true
 		}
 	}

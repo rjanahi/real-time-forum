@@ -284,7 +284,7 @@ func ConnectWeb(db *sql.DB) {
     		  (m.sender_id   = ? AND m.receiver_id = u.id)
     		  OR
     		  (m.sender_id   = u.id   AND m.receiver_id = ?)
-		) DESC,	u.username ASC;
+		) DESC,	u.username COLLATE NOCASE ASC;
     `, userID, userID, userID)
 		if err != nil {
 			http.Error(w, "Failed to fetch users", http.StatusInternalServerError)

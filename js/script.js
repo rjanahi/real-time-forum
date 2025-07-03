@@ -228,6 +228,7 @@ if (isErrorState) {
                     .then(response => response.json())
                     .then(data => {
                         console.log(data.message);
+                        disconnectWeb();
                         socket.send(JSON.stringify({ type: "new_user" }));
                         checkSession(); // Refresh session check to update UI
                         showSection(mainSection, '/'); // Redirect to main page after logout
