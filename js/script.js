@@ -159,6 +159,8 @@ if (isErrorState) {
                         console.log(data.message);
                         if (data.message === "Login successful.") {
                             Chatusername = data.username;
+                            window.Chatusername = Chatusername; 
+                            console.log("Chatusername:", data.username);
                             checkSession(); // Refresh session check
                             loginForm.reset();
                             if (socket && socket.readyState === WebSocket.OPEN) {

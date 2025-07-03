@@ -4,8 +4,7 @@ let selectedUserId = null;
 let typingTimeout = null;
 let currentOffset = 0;
 let throttle = false;
-
-let Myusername;
+;
 let Theirname;
 
 const chatMain = document.getElementById("chat-main");
@@ -67,7 +66,7 @@ function fetchUserList() {
             }
             userList.appendChild(li);
           } else {
-            Myusername = user.username;
+            console.log("My username:", Chatusername);
           }
         });
       }
@@ -119,31 +118,7 @@ function prependMessageToChat(msg) {
 
   if (msg.from === loggedInUserId) {
     node.classList.add("my-message");
-    node.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(
-      msg.timestamp
-    ).toLocaleString()}:</strong><br> ${msg.content}`;
-  } else {
-    node.classList.add("received-message");
-    node.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(
-      msg.timestamp
-    ).toLocaleString()}:</strong><br> ${msg.content}`;
-  }
-
-  // Insert the new message at the top
-  container.insertBefore(node, container.firstChild);
-}
-
-
-
-function prependMessageToChat(msg) {
-  const container = document.getElementById("chatWindow");
-  const node = document.createElement("div");
-  node.classList.add("chat-message");
-
-
-  if (msg.from === loggedInUserId) {
-    node.classList.add("my-message");
-    node.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(
+    node.innerHTML = `<strong>${Chatusername}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   } else {
@@ -222,6 +197,8 @@ function setupCloseChatBtn() {
 function sendMessage(toId, content) {
   if (!socket || socket.readyState !== WebSocket.OPEN) return;
 
+  console.log("Sending message from:", loggedInUserId);
+
   const message = {
     type: "message",
     from: loggedInUserId,
@@ -240,7 +217,7 @@ function sendTypingSignal() {
   const signal = {
     type: "typing",
     from: loggedInUserId,
-    username: Myusername,
+    username: Chatusername,
     to: selectedUserId,
   };
 
@@ -275,8 +252,10 @@ function appendMessageToChat(msg) {
   newMessage.classList.add("chat-message");
 
   if (msg.from === loggedInUserId) {
+    console.log("msg.from:", Chatusername);
+
     newMessage.classList.add("my-message");
-    newMessage.innerHTML = `<strong>${Myusername}</strong> <strong>${new Date(
+    newMessage.innerHTML = `<strong>${Chatusername}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   } else {
@@ -300,9 +279,7 @@ function updateUserListPeriodically() {
 setupCloseChatBtn();
 
 function loadAndInitChat(userId) {
-
   loggedInUserId = userId;
-  connectWebSocket(userId);
   fetchUserList();
   setupChatForm();
   chatWindow.scrollTop = chatWindow.scrollHeight;
@@ -340,13 +317,8 @@ function returnToPosts() {
   history.pushState(null, "", "/posts");
 }
 
-
-
-
 if (openChatButton) {
   openChatButton.addEventListener('click', () => {
-    loadAndInitChat(userID);
-    window.location.href = '/chat';
     loadAndInitChat(userID);
   });
 }

@@ -66,6 +66,13 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		userName, err := database.GetUsernameUsingID(db, userID)
+		if err != nil {
+			fmt.Println(" Error getting user ID:", err)
+			http.Error(w, "Internal server error", http.StatusInternalServerError)
+			return
+		}
+
 		//  Check if there is an active session
 		activeSessionID, err := database.GetActiveSessionbyUserID(db, userID)
 		if err != nil {
@@ -112,7 +119,7 @@ func Login(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 		fmt.Println(" Login successful for User ID:", userID)
 
 		//  Send success response
-		response := map[string]string{"message": "Login successful."}
+		response := map[string]string{"message": "Login successful.", "username": userName}
 		w.Header().Set("Content-Type", "application/json")
 		w.WriteHeader(http.StatusOK)
 		json.NewEncoder(w).Encode(response)
