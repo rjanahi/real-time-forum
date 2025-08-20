@@ -27,6 +27,7 @@ let Chatusername;
 
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
+    sessionStorage.setItem("prevPath", window.location.pathname);
     errorSection.hidden = true;
     mainSection.hidden = true;
     signUpSection.hidden = true;
@@ -159,15 +160,14 @@ if (isErrorState) {
                         console.log(data.message);
                         if (data.message === "Login successful.") {
                             Chatusername = data.username;
-                            window.Chatusername = Chatusername; 
+                            window.Chatusername = Chatusername;
                             console.log("Chatusername:", data.username);
                             checkSession(); // Refresh session check
                             loginForm.reset();
                             if (socket && socket.readyState === WebSocket.OPEN) {
                                 socket.send(JSON.stringify({ type: "new_user" }));
                             }
-                            showSection(postPageSection, '/posts'); // Navigate to posts section
-                            loadPosts();
+                            showSection(mainSection, '/'); // Navigate to posts section
                         } else {
                             const error = document.getElementById("logerror")
                             error.innerHTML = data.message;

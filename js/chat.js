@@ -82,6 +82,7 @@ function setupChatForm() {
     e.preventDefault();
     const content = chatInput.value.trim();
     if (content && selectedUserId) {
+
       sendMessage(selectedUserId, content);
       chatWindow.scrollTop = chatWindow.scrollHeight;
       chatInput.value = ""; // Clear input after sending
@@ -115,10 +116,10 @@ function prependMessageToChat(msg) {
   const node = document.createElement("div");
   node.classList.add("chat-message");
 
-
+console.log("session user in prepend msg: ",usernameFromSession);
   if (msg.from === loggedInUserId) {
     node.classList.add("my-message");
-    node.innerHTML = `<strong>${Chatusername}</strong> <strong>${new Date(
+    node.innerHTML = `<strong>${usernameFromSession}</strong> <strong>${new Date(
       msg.timestamp
     ).toLocaleString()}:</strong><br> ${msg.content}`;
   } else {
@@ -252,17 +253,17 @@ function appendMessageToChat(msg) {
   newMessage.classList.add("chat-message");
 
   if (msg.from === loggedInUserId) {
-    console.log("msg.from:", Chatusername);
+    console.log("msg.from:", usernameFromSession);
 
     newMessage.classList.add("my-message");
-    newMessage.innerHTML = `<strong>${Chatusername}</strong> <strong>${new Date(
+    newMessage.innerHTML = `<strong>${escapeHTML(usernameFromSession)}</strong> <strong>${new Date(
       msg.timestamp
-    ).toLocaleString()}:</strong><br> ${msg.content}`;
+    ).toLocaleString()}:</strong><br> ${escapeHTML(msg.content)}`;
   } else {
     newMessage.classList.add("received-message");
-    newMessage.innerHTML = `<strong>${Theirname}</strong> <strong>${new Date(
+    newMessage.innerHTML = `<strong>${escapeHTML(Theirname)}</strong> <strong>${new Date(
       msg.timestamp
-    ).toLocaleString()}:</strong><br> ${msg.content}`;
+    ).toLocaleString()}:</strong><br> ${escapeHTML(msg.content)}`;
   }
 
   // Append the new message instead of prepending
@@ -319,7 +320,9 @@ function returnToPosts() {
 
 if (openChatButton) {
   openChatButton.addEventListener('click', () => {
-    loadAndInitChat(userID);
+    checkSession().then(() => {
+      loadAndInitChat(userID);
+    })
   });
 }
 

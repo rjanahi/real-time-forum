@@ -1,9 +1,11 @@
 function checkSession() {
+
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
-        return; 
+        return;
     }
-    fetch('/check-session', {
+
+    return fetch('/check-session', {
         method: 'GET',
         credentials: 'include'
     })
@@ -19,6 +21,8 @@ function checkSession() {
 
             if (data.loggedIn && typeof data.userID !== "undefined") {
                 console.log(" User is logged in:", data.userID);
+                console.log("username from session: ", data.username)
+                window.usernameFromSession = data.username;
                 connectWebSocket(data.userID);
                 loadAndInitChat(data.userID);
                 show.hidden = false;
@@ -41,7 +45,27 @@ function checkSession() {
                 if (postsButton) postsButton.style.display = "none";
             }
         })
-        .catch(error => errorPage(500));
+        .catch(error => errorPage(500, error));
 }
 
+function escapeHTML(str = "") {
+    return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#39;");
+}
+
+function back() {
+    console.log(history.pushState().String);
+    history.pushState();
+}
+
+window.addEventListener("popstate", () => {
+    back();
+});
+
+
 window.checkSession = checkSession;
+window.escapeHTML = escapeHTML;

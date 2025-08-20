@@ -1,5 +1,7 @@
 let thisPostId = null;
 
+
+
 function loadCommentsForPost(postId) {
     if (isErrorState) {
         console.warn("Cannot send data; application is in an error state.");
@@ -25,7 +27,7 @@ function loadCommentsForPost(postId) {
 
             if (parsedResponse.error) {
                 console.error(" Server Error:", parsedResponse.error);
-                commentsSection.innerHTML = `<p>Error loading comments: ${parsedResponse.error}</p>`;
+                commentsSection.innerHTML = `<p>Error loading comments: ${escapeHTML(parsedResponse.error)}</p>`;
                 return;
             }
 
@@ -35,21 +37,24 @@ function loadCommentsForPost(postId) {
             commentsSection.innerHTML = `
         <button id="return-to-posts" class="return-button">Return</button>
         <div class="comment-post">
-            <h2>${post.title}</h2>
-            <p>${post.content}</p>
-            <small>Posted by <strong>${post.username}</strong> on ${post.createdAt} - ${post.categories.join(', ')} </small>
+            <h2>${escapeHTML(post.title)}</h2>
+            <p>${escapeHTML(post.content)}</p>
+            <small>
+              Posted by <strong>${escapeHTML(post.username)}</strong>
+              on ${escapeHTML(post.createdAt)}
+              - ${Array.isArray(post.categories) ? post.categories.map(escapeHTML).join(', ') : ''}
+            </small>
         </div>
         <div class="container-about">
             <h2>Comments</h2>
             <div id="commentsList"></div><br><br>
             <form id="commentForm">
-                <textarea id="commentText" name="comment" placeholder="Write your comment here..." required></textarea><br>
+                <textarea id="commentText" name="comment" placeholder="Write your comment here..." maxlength="120" required></textarea><br>
                 <input type="hidden" id="postID" value="${postId}">
                 <button id="sendCommentButton" class="button-main" type="submit">Post Comment</button>
             </form>
         </div>
     `;
-
 
             const commentsList = document.getElementById("commentsList");
 
@@ -63,8 +68,10 @@ function loadCommentsForPost(postId) {
 
                     commentsList.innerHTML += `
                 <div id="comment-${comment.id}">
-                    <p><strong>${comment.username}:</strong> ${comment.content}
-                    <small>${formattedDate}</small></p>
+                    <p>
+                      <strong>${escapeHTML(comment.username)}:</strong> ${escapeHTML(comment.content)}
+                      <small>${escapeHTML(formattedDate)}</small>
+                    </p>
                     <span class="material-icons" id="likeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, true)"> thumb_up </span>
                     <span id="likesCountComment${comment.id}">0</span>
                     <span class="material-icons" id="dislikeComment${comment.id}" onclick="likeDislikeComment(${comment.id}, false)"> thumb_down </span>
@@ -72,26 +79,33 @@ function loadCommentsForPost(postId) {
                 </div>
             `;
 
-                    //  Fetch and update likes/dislikes for each comment
+                    // Fetch and update likes/dislikes for each comment
                     getInteractions(null, comment.id);
                 });
             }
 
-            
             showSection(commentsSection, `/comment/${postId}`);
 
-            if (document.getElementById("return-to-posts")) {
-                document.getElementById("return-to-posts").addEventListener('click', () => {
+            const returnBtn = document.getElementById("return-to-posts");
+            if (returnBtn) {
+                returnBtn.addEventListener('click', () => {
                     showSection(postPageSection, `/posts`);
-                    loadPosts(); 
+                    loadPosts();
                 });
             }
 
             document.getElementById('commentForm').addEventListener('submit', function (event) {
-                event.preventDefault();  //  Prevent default form submission
+                event.preventDefault();  // Prevent default form submission
 
-                const commentText = document.getElementById("commentText").value.trim();
+                let commentText = document.getElementById("commentText").value.trim();
                 const postID = document.getElementById("postID").value;
+
+                // Enforce 120-char max (belt-and-suspenders)
+                if (commentText.length > 120) {
+                    commentText = commentText.slice(0, 120);
+                    document.getElementById("commentText").value = commentText;
+                }
+
                 if (!commentText) {
                     console.log(" Comment cannot be empty.");
                     return;
@@ -112,17 +126,13 @@ function loadCommentsForPost(postId) {
                         console.log(" Server Response:", data);
 
                         if (data.success) {
-                            //  Clear input field
                             document.getElementById("commentText").value = "";
-                            
-                            //  Reload comments without redirecting
                             loadCommentsForPost(postID);
                         } else {
                             console.log(" Error: " + data.message);
                         }
                         console.log(" Comment ID:", data.comment_id);
                         socket.send(JSON.stringify({ type: "new_comment" , post_id: parseInt(postID) , comment_id: data.comment_id}));
-
                     })
                     .catch(error => errorPage(500));
             });

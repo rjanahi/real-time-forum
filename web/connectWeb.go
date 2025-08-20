@@ -166,9 +166,11 @@ func ConnectWeb(db *sql.DB) {
 
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
 		userID, loggedIn := u.ValidateSession(db, r)
+		username , _ := database.GetUsernameUsingID(db,userID)
 		response := map[string]interface{}{
 			"loggedIn": loggedIn,
 			"userID":   userID,
+			"username": username,
 		}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
