@@ -11,7 +11,6 @@ function checkSession() {
     })
         .then(response => response.json())
         .then(data => {
-            const userID = data.userID;
             const signUpButton = document.getElementById('signUpButton');
             const logInButton = document.getElementById('logInButton');
             const logoutButton = document.getElementById('logoutButton');
@@ -33,6 +32,10 @@ function checkSession() {
                 //  Show logout & posts buttons
                 if (logoutButton) logoutButton.style.display = "inline-block";
                 if (postsButton) postsButton.style.display = "inline-block";
+
+                if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
+                    showSection(mainSection, '/');
+                }
             } else {
                 console.log(" User is not logged in.");
 
@@ -57,15 +60,48 @@ function escapeHTML(str = "") {
         .replaceAll("'", "&#39;");
 }
 
-function back() {
-    console.log(history.pushState().String);
-    history.pushState();
+function handleRoute(path) {
+    console.log("Routing to:", path);
+
+    switch (true) {
+        case path === "/":
+            checkSession().then(() => { showSection(mainSection, "/") });
+            break;
+        case path === "/signup":
+            checkSession().then(() => { showSection(signUpSection, "/signup") });
+            break;
+        case path === "/login":
+            checkSession().then(() => { showSection(logInSection, "/login"); });
+            break;
+        case path === "/posts":
+            checkSession().then(() => {
+                showSection(postPageSection, "/posts");
+                loadPosts()
+            });
+            break;
+        case path === "/create-post":
+            checkSession().then(() => { showSection(createPostSection, "/create-post") });
+            break;
+        case path === "/about-us":
+            checkSession().then(() => { showSection(aboutUsSection, "/about-us") });
+            break;
+        case /^\/comment\/\d+$/.test(path): { // dynamic comment routes
+            const postId = path.split("/").pop();
+            checkSession().then(() => {
+                showSection(commentsSection, path);
+                loadCommentsForPost(postId)
+            });
+            break;
+        }
+        default:
+            checkSession().then(() => { showSection(mainSection, "/") });
+    }
 }
 
+// 1. Handle back/forward navigation
 window.addEventListener("popstate", () => {
-    back();
+    handleRoute(window.location.pathname);
 });
-
 
 window.checkSession = checkSession;
 window.escapeHTML = escapeHTML;
