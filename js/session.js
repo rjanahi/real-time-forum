@@ -60,8 +60,9 @@ function escapeHTML(str = "") {
         .replaceAll("'", "&#39;");
 }
 
-function handleRoute(path) {
-    console.log("Routing to:", path);
+//handle back or forward
+window.addEventListener("popstate", () => {
+    const path = window.location.pathname;
 
     switch (true) {
         case path === "/":
@@ -96,11 +97,6 @@ function handleRoute(path) {
         default:
             checkSession().then(() => { showSection(mainSection, "/") });
     }
-}
-
-// 1. Handle back/forward navigation
-window.addEventListener("popstate", () => {
-    handleRoute(window.location.pathname);
 });
 
 window.checkSession = checkSession;
