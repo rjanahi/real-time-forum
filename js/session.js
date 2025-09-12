@@ -34,8 +34,9 @@ function checkSession() {
                 if (postsButton) postsButton.style.display = "inline-block";
 
                 if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
-                    showSection(mainSection, '/');
+                    showSection(mainSection, "/");
                 }
+
             } else {
                 console.log(" User is not logged in.");
 
@@ -47,8 +48,12 @@ function checkSession() {
                 if (logoutButton) logoutButton.style.display = "none";
                 if (postsButton) postsButton.style.display = "none";
             }
+            return data;
         })
-        .catch(error => errorPage(500, error));
+        .catch(error => {
+            errorPage(500, error);
+            return { loggedIn: false, userID: null };
+        });
 }
 
 function escapeHTML(str = "") {
@@ -64,31 +69,60 @@ function escapeHTML(str = "") {
 window.addEventListener("popstate", () => {
     const path = window.location.pathname;
 
+    console.log("Popstate event:", path);
     switch (true) {
         case path === "/":
-            checkSession().then(() => { showSection(mainSection, "/") });
+            checkSession().then(() => {
+                showSection(mainSection, "/")
+            });
             break;
         case path === "/signup":
-            checkSession().then(() => { showSection(signUpSection, "/signup") });
+            checkSession().then(session => {
+                if (session && session.loggedIn) {
+                    showSection(mainSection, "/");
+                    return;
+                }
+                showSection(signUpSection, "/signup")
+            });
             break;
         case path === "/login":
-            checkSession().then(() => { showSection(logInSection, "/login"); });
+            checkSession().then(session => {
+                if (session && session.loggedIn) {
+                    showSection(mainSection, "/");
+                    return;
+                }
+                showSection(logInSection, "/login");
+            });
             break;
         case path === "/posts":
-            checkSession().then(() => {
+            checkSession().then(session => {
+                if (session && !session.loggedIn) {
+                    showSection(logInSection, "/login");
+                    return;
+                }
                 showSection(postPageSection, "/posts");
                 loadPosts()
             });
             break;
         case path === "/create-post":
-            checkSession().then(() => { showSection(createPostSection, "/create-post") });
+            checkSession().then(session => {
+                if (session && !session.loggedIn) {
+                    showSection(logInSection, "/login");
+                    return;
+                }
+                showSection(createPostSection, "/create-post")
+            });
             break;
         case path === "/about-us":
             checkSession().then(() => { showSection(aboutUsSection, "/about-us") });
             break;
         case /^\/comment\/\d+$/.test(path): { // dynamic comment routes
             const postId = path.split("/").pop();
-            checkSession().then(() => {
+            checkSession().then(session => {
+                if (session && !session.loggedIn) {
+                    showSection(logInSection, "/login");
+                    return;
+                }
                 showSection(commentsSection, path);
                 loadCommentsForPost(postId)
             });
