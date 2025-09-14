@@ -52,99 +52,101 @@ if (isErrorState) {
                 if (postsButton) {
                     postsButton.addEventListener('click', () => {
                         showSection(postPageSection, '/posts');
-                        checkSession();
+
                         loadPosts();
                     })
 
                 }
                 if (createPostButton) createPostButton.addEventListener('click', () => showSection(createPostSection, "/create-post"))
-                
+
                 if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
-            }
 
-            if (postMyPageButton) postMyPageButton.addEventListener('click', loadMyPosts);
-            if (postsPageButton) {
-                postsPageButton.addEventListener('click', () => {
-                    showSection(postPageSection, '/posts');
-                    checkSession();
-                    loadPosts();
-                });
-            }
+                if (postMyPageButton) postMyPageButton.addEventListener('click', loadMyPosts);
+                if (postsPageButton) {
+                    postsPageButton.addEventListener('click', () => {
+                        showSection(postPageSection, '/posts');
 
-
-            categoryButtons.forEach(button => {
-                button.addEventListener('click', () => {
-                    const category = button.value; // Get the category from the button's value
-                    loadCategoryPosts(category);
-                    showSection(postPageSection, '/category/' + category); // Show posts of the selected category
-                });
-            });
-            // Create form submission
-            const createPostForm = document.getElementById('createPostForm');
-
-            //Create form
-            if (createPostForm) {
-                createPostForm.addEventListener('submit', function (event) {
-                    if (isErrorState) {
-                        console.warn("createPostForm! Cannot send data; application is in an error state.");
-                        return;
-                    }
-                    event.preventDefault(); // Prevent default form submission
-
-                    // Get selected categories (checkboxes)
-                    const selectedCategories = [];
-                    document.querySelectorAll('input[name="category"]:checked').forEach((checkbox) => {
-                        selectedCategories.push(checkbox.value);
+                        loadPosts();
                     });
+                }
 
-                    const postData = {
-                        title: document.getElementById('title').value,
-                        content: document.getElementById('content').value,
-                        categories: selectedCategories // Send array of selected categories
-                    };
 
-                    fetch('/create-post', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(postData),
-                        credentials: 'include' // Ensures session cookies are sent
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
-                            if (data.success) createPostForm.reset();
-                            socket.send(JSON.stringify({ type: "new_post" }));
-                            showSection(postPageSection, '/posts');
-                        })
-                        .catch(error => errorPage(500));
+                categoryButtons.forEach(button => {
+                    button.addEventListener('click', () => {
+                        const category = button.value; // Get the category from the button's value
+                        loadCategoryPosts(category);
+                        showSection(postPageSection, '/category/' + category); // Show posts of the selected category
+                    });
                 });
-            }
+                // Create form submission
+                const createPostForm = document.getElementById('createPostForm');
 
-            // Logout functionality
-            if (logoutButton) {
-                logoutButton.addEventListener('click', function () {
+                //Create form
+                if (createPostForm) {
+                    createPostForm.addEventListener('submit', function (event) {
+                        if (isErrorState) {
+                            console.warn("createPostForm! Cannot send data; application is in an error state.");
+                            return;
+                        }
+                        event.preventDefault(); // Prevent default form submission
 
-                    fetch('/logout', {
-                        method: 'POST',
-                        credentials: 'include'
-                    })
-                        .then(response => response.json())
-                        .then(data => {
-                            console.log(data.message);
-                            disconnectWeb();
-                            socket.send(JSON.stringify({ type: "new_user" }));
-                            checkSession(); // Refresh session check to update UI
-                            showSection(mainSection, '/'); // Redirect to main page after logout
+                        // Get selected categories (checkboxes)
+                        const selectedCategories = [];
+                        document.querySelectorAll('input[name="category"]:checked').forEach((checkbox) => {
+                            selectedCategories.push(checkbox.value);
+                        });
+
+                        const postData = {
+                            title: document.getElementById('title').value,
+                            content: document.getElementById('content').value,
+                            categories: selectedCategories // Send array of selected categories
+                        };
+
+                        fetch('/create-post', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(postData),
+                            credentials: 'include' // Ensures session cookies are sent
                         })
-                        .catch(error => errorPage(500));
-                });
-            }
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
+                                if (data.success) createPostForm.reset();
+                                socket.send(JSON.stringify({ type: "new_post" }));
+                                showSection(postPageSection, '/posts');
+                            })
+                            .catch(error => errorPage(500));
+                    });
+                }
 
+            }
         });
-        if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
+
     });
 
+    // Logout functionality
+    if (logoutButton) {
+        logoutButton.addEventListener('click', function () {
 
+            fetch('/logout', {
+                method: 'POST',
+                credentials: 'include'
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data.message);
+                    disconnectWeb();
+                    socket.send(JSON.stringify({ type: "new_user" }));
+                    checkSession().then(() => {
+                        showSection(mainSection, '/');
+                    });
+
+                })
+                .catch(error => errorPage(500));
+        });
+    }
+    
+    if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
     if (logInButton) logInButton.addEventListener('click', () => showSection(logInSection, '/login'));
@@ -157,8 +159,6 @@ if (isErrorState) {
 
     // Login form 
     const loginForm = document.getElementById('loginForm');
-
-
 
     // Registration form 
     if (registrationForm) {

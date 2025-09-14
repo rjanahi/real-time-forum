@@ -1,10 +1,5 @@
 function checkSession() {
 
-    if (isErrorState) {
-        console.warn("Cannot send data; application is in an error state.");
-        return;
-    }
-
     return fetch('/check-session', {
         method: 'GET',
         credentials: 'include'
@@ -70,67 +65,59 @@ window.addEventListener("popstate", () => {
     const path = window.location.pathname;
 
     console.log("Popstate event:", path);
-    switch (true) {
-        case path === "/":
-            checkSession().then(() => {
-                showSection(mainSection, "/")
-            });
-            break;
-        case path === "/signup":
-            checkSession().then(session => {
+    checkSession().then(session => {
+        switch (true) {
+            case path === "/":
+                showSection(mainSection, "/");
+                break;
+            case path === "/signup":
                 if (session && session.loggedIn) {
                     showSection(mainSection, "/");
                     return;
                 }
                 showSection(signUpSection, "/signup")
-            });
-            break;
-        case path === "/login":
-            checkSession().then(session => {
+                    ;
+                break;
+            case path === "/login":
                 if (session && session.loggedIn) {
                     showSection(mainSection, "/");
                     return;
                 }
                 showSection(logInSection, "/login");
-            });
-            break;
-        case path === "/posts":
-            checkSession().then(session => {
+                break;
+            case path === "/posts":
                 if (session && !session.loggedIn) {
                     showSection(logInSection, "/login");
                     return;
                 }
                 showSection(postPageSection, "/posts");
-                loadPosts()
-            });
-            break;
-        case path === "/create-post":
-            checkSession().then(session => {
+                loadPosts();
+                break;
+            case path === "/create-post":
                 if (session && !session.loggedIn) {
                     showSection(logInSection, "/login");
                     return;
                 }
-                showSection(createPostSection, "/create-post")
-            });
-            break;
-        case path === "/about-us":
-            checkSession().then(() => { showSection(aboutUsSection, "/about-us") });
-            break;
-        case /^\/comment\/\d+$/.test(path): { // dynamic comment routes
-            const postId = path.split("/").pop();
-            checkSession().then(session => {
+                showSection(createPostSection, "/create-post");
+                break;
+            case path === "/about-us":
+                showSection(aboutUsSection, "/about-us");
+                break;
+            case /^\/comment\/\d+$/.test(path): { // dynamic comment routes
+                const postId = path.split("/").pop();
+
                 if (session && !session.loggedIn) {
                     showSection(logInSection, "/login");
                     return;
                 }
                 showSection(commentsSection, path);
                 loadCommentsForPost(postId)
-            });
-            break;
+                break;
+            }
+            default:
+                showSection(mainSection, "/");
         }
-        default:
-            checkSession().then(() => { showSection(mainSection, "/") });
-    }
+    });
 });
 
 window.checkSession = checkSession;
