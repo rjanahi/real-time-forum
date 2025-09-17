@@ -114,6 +114,20 @@ window.addEventListener("popstate", () => {
                 loadCommentsForPost(postId)
                 break;
             }
+            case /^\/category\/[^/]+$/.test(path): { // dynamic category routes
+                const categoryId = path.split("/").pop();
+                console.log(categoryId);
+
+                if (session && !session.loggedIn) {
+                    showSection(logInSection, "/login");
+                    return;
+                }
+                showSection(postPageSection, "/category/" + categoryId);
+                loadCategoryPosts(categoryId);
+
+                break;
+            }
+
             default:
                 showSection(mainSection, "/");
         }

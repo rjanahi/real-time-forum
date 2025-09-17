@@ -24,7 +24,6 @@ const categoryButtons = document.querySelectorAll('#categoryOptions .button-side
 
 let userID = 0;
 let Chatusername;
-
 // Function to show a section and hide others
 function showSection(sectionToShow, urlSuffix) {
     sessionStorage.setItem("prevPath", window.location.pathname);
@@ -37,7 +36,6 @@ function showSection(sectionToShow, urlSuffix) {
     aboutUsSection.hidden = true;
     commentsSection.hidden = true;
     sectionToShow.hidden = false;
-
     // Update the URL
     history.pushState(null, '', urlSuffix);
 }
@@ -46,16 +44,19 @@ if (isErrorState) {
 } else {
 
     document.addEventListener('DOMContentLoaded', () => {
-        checkSession().then(session => {
-            console.log("Initial session check:", session);
-            if (session.loggedIn) {
+        
+        checkSession();
                 if (postsButton) {
                     postsButton.addEventListener('click', () => {
-                        showSection(postPageSection, '/posts');
+                        checkSession().then(session => {
+                            if(session.loggedIn){
+                                showSection(postPageSection, '/posts');
 
-                        loadPosts();
+                          loadPosts();
+                            }
+                        
                     })
-
+                });
                 }
                 if (createPostButton) createPostButton.addEventListener('click', () => showSection(createPostSection, "/create-post"))
 
@@ -119,10 +120,10 @@ if (isErrorState) {
                     });
                 }
 
-            }
+            
         });
 
-    });
+
 
     // Logout functionality
     if (logoutButton) {
