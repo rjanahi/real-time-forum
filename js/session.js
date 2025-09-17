@@ -1,10 +1,36 @@
 function checkSession() {
-
     return fetch('/check-session', {
         method: 'GET',
         credentials: 'include'
     })
-        .then(response => response.json())
+        .then(response => {
+            console.log(" Session Check Response Status:", response.status);
+            switch (response.status) {
+                case 401:
+                    errorPage(401); // Handle unauthorized access
+                    return;
+                case 403:
+                    errorPage(403); // Handle forbidden access
+                    return;
+                case 404:
+                    errorPage(404);
+                    return;
+                case 405:
+                    errorPage(405);
+                    return;
+                case 500:
+                    errorPage(500);
+                    return;
+                default:
+
+                    break;
+            }
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+
+        })
         .then(data => {
             const signUpButton = document.getElementById('signUpButton');
             const logInButton = document.getElementById('logInButton');
@@ -12,6 +38,9 @@ function checkSession() {
             const postsButton = document.getElementById('postsButton');
             const show = document.getElementById('show');
 
+            if (data == undefined) {
+                data = { loggedIn: false, userID: null };
+            }
 
             if (data.loggedIn && typeof data.userID !== "undefined") {
                 console.log(" User is logged in:", data.userID);
@@ -116,7 +145,6 @@ window.addEventListener("popstate", () => {
             }
             case /^\/category\/[^/]+$/.test(path): { // dynamic category routes
                 const categoryId = path.split("/").pop();
-                console.log(categoryId);
 
                 if (session && !session.loggedIn) {
                     showSection(logInSection, "/login");

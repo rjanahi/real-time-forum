@@ -166,7 +166,7 @@ func ConnectWeb(db *sql.DB) {
 
 	http.HandleFunc("/check-session", func(w http.ResponseWriter, r *http.Request) {
 		userID, loggedIn := u.ValidateSession(db, r)
-		username , _ := database.GetUsernameUsingID(db,userID)
+		username, _ := database.GetUsernameUsingID(db, userID)
 		response := map[string]interface{}{
 			"loggedIn": loggedIn,
 			"userID":   userID,
@@ -313,18 +313,21 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/error/", func(w http.ResponseWriter, r *http.Request) {
-		num, err := strconv.Atoi(strings.TrimPrefix(r.URL.Path, "/error/"))
-		if r.Method == http.MethodGet {
-			e.ErrorHandler(w, r, num)
-		}
-		if err != nil {
-			e.ErrorHandler(w, r, 500) // If there's an error converting, return a 500 error
-			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(500)
+		if r.Method != http.MethodGet {
+			e.ErrorHandler(w, r, 405)
 			return
 		}
-		e.ErrorHandler(w, r, num)
 
+		numStr := strings.TrimPrefix(r.URL.Path, "/error/")
+		num, err := strconv.Atoi(numStr)
+		if err != nil {
+			e.ErrorHandler(w, r, 500)
+			_, _ = w.Write([]byte("<h1>500 Internal Server Error</h1>"))
+			return
+		}
+
+		e.ErrorHandler(w, r, num)
+		w.Write([]byte(fmt.Sprintf("<h1>%d Error</h1>", num)))
 	})
 
 	fmt.Println("Listening on: http://localhost:8080/")
@@ -338,7 +341,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	tmpl, err := template.ParseFiles("templates/mainPage.html")
 	if err != nil {
 		log.Printf("Error parsing template: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		e.ErrorHandler(w, r, 500)
 		return
 	}
 
@@ -350,7 +353,7 @@ func mainPageHandler(w http.ResponseWriter, r *http.Request, db *sql.DB) {
 	err = tmpl.Execute(w, data)
 	if err != nil {
 		log.Printf("Error executing template: %v", err)
-		http.Error(w, "Internal Server Error", http.StatusInternalServerError)
+		e.ErrorHandler(w, r, 500)
 		return
 	}
 }

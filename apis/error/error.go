@@ -3,21 +3,19 @@ package error
 import "net/http"
 
 func ErrorHandler(w http.ResponseWriter, r *http.Request, errNum int) {
-	// Set the content type
-	w.Header().Set("Content-Type", "text/html")
-
-	// Check if the status code is not already set
-	if w.Header().Get("X-Status-Code") == "" {
-		switch errNum {
-		case 400:
-			w.WriteHeader(http.StatusBadRequest) // 400 Bad Request
-		case 404:
-			w.WriteHeader(http.StatusNotFound) // 404 Not Found
-		case 500:
-			w.WriteHeader(http.StatusInternalServerError) // 500 Internal Server Error
-		default:
-			w.WriteHeader(http.StatusInternalServerError) // Default to 500
-		}
-		w.Header().Set("X-Status-Code", "true") // Mark that the status code has been set
+	w.Header().Set("Content-Type", "text/html; charset=utf-8")
+	switch errNum {
+	case 400:
+		w.WriteHeader(http.StatusBadRequest)
+	case 401:
+		w.WriteHeader(http.StatusUnauthorized)
+	case 403:
+		w.WriteHeader(http.StatusForbidden)
+	case 404:
+		w.WriteHeader(http.StatusNotFound)
+	case 405:
+		w.WriteHeader(http.StatusMethodNotAllowed)
+	default:
+		w.WriteHeader(http.StatusInternalServerError)
 	}
 }

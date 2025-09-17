@@ -21,16 +21,30 @@ function fetchUserList() {
     method: "GET",
     credentials: "include",
   })
-    .then((res) => {
-      if (res.status === 401) {
-        console.error("Unauthorized access. Please log in.");
-        return;
+    .then(response => {
+      switch (response.status) {
+        case 401:
+          errorPage(401); // Handle unauthorized access
+          return;
+        case 403:
+          errorPage(403); // Handle forbidden access
+          return;
+        case 404:
+          errorPage(404);
+          return;
+        case 405:
+          errorPage(405);
+          return;
+        case 500:
+          errorPage(500);
+          return;
+        default:
+          break;
       }
-      if (res.status === 404) {
-        console.log(error);
-        return;
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
       }
-      return res.json();
+      return response.json();
     })
     .then((users) => {
       const userList = document.getElementById("userList");
@@ -116,7 +130,7 @@ function prependMessageToChat(msg) {
   const node = document.createElement("div");
   node.classList.add("chat-message");
 
-console.log("session user in prepend msg: ",usernameFromSession);
+  console.log("session user in prepend msg: ", usernameFromSession);
   if (msg.from === loggedInUserId) {
     node.classList.add("my-message");
     node.innerHTML = `<strong>${usernameFromSession}</strong> <strong>${new Date(

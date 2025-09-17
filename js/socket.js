@@ -1,11 +1,4 @@
 function connectWebSocket(userId) {
-  if (isErrorState) {
-    console.warn(
-      "connectWebSocket! Cannot send data; application is in an error state."
-    );
-    return;
-  }
-
   if (userId == null || userId == "undefined" || userId == 0) {
     console.log("WebSocket Not connected");
     return;

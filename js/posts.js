@@ -1,20 +1,29 @@
-
-
 //load all the posts
 function loadPosts() {
-    if (isErrorState) {
-        console.warn("loadPosts! Cannot send data; application is in an error state.");
-        return; 
-    }
     fetch('/get-posts', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     })
         .then(response => {
-            if (response.status === 404) {
-                errorPage(404); // Handle posts not found
-                return;
+             switch (response.status) {
+                case 401:
+                    errorPage(401); // Handle unauthorized access
+                    return;
+                case 403:
+                    errorPage(403); // Handle forbidden access
+                    return;
+                case 404:
+                    errorPage(404);
+                    return;
+                case 405:
+                    errorPage(405);
+                    return;
+                case 500:
+                    errorPage(500);
+                    return;
+                default:
+                    break;
             }
             if (!response.ok) {
                 throw new Error('Failed to fetch posts');
@@ -75,20 +84,34 @@ function loadPosts() {
 
 //load only user posts
 function loadMyPosts() {
-    if (isErrorState) {
-        console.warn("loadMyPosts! Cannot send data; application is in an error state.");
-        return; 
-    }
+
     fetch('/get-myPosts', {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     })
         .then(response => {
-            if (response.status === 404) {
-                errorPage(404); // Handle posts not found
-                return;
+
+            switch (response.status) {
+                case 401:
+                    errorPage(401); // Handle unauthorized access
+                    return;
+                case 403:
+                    errorPage(403); // Handle forbidden access
+                    return;
+                case 404:
+                    errorPage(404);
+                    return;
+                case 405:
+                    errorPage(405);
+                    return;
+                case 500:
+                    errorPage(500);
+                    return;
+                default:
+                    break;
             }
+           
             if (!response.ok) {
                 throw new Error('Failed to fetch posts');
             }
@@ -148,19 +171,31 @@ function loadMyPosts() {
 
 //load posts with specific category
 function loadCategoryPosts(category) {
-    if (isErrorState) {
-        console.warn("loadCategoryPosts! Cannot send data; application is in an error state.");
-        return; 
-    }
+
     fetch('/category/' + category, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     })
         .then(response => {
-            if (response.status === 404) {
-                errorPage(404); // Handle category not found
-                return;
+             switch (response.status) {
+                case 401:
+                    errorPage(401); // Handle unauthorized access
+                    return;
+                case 403:
+                    errorPage(403); // Handle forbidden access
+                    return;
+                case 404:
+                    errorPage(404);
+                    return;
+                case 405:
+                    errorPage(405);
+                    return;
+                case 500:
+                    errorPage(500);
+                    return;
+                default:
+                    break;
             }
             if (!response.ok) {
                 throw new Error('Network response was not ok');

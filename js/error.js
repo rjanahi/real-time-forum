@@ -1,4 +1,3 @@
-let isErrorState = false;
 
 function errorPage(errNum, error) {
   const errorSection = document.getElementById("errorSection");
@@ -20,7 +19,6 @@ function errorPage(errNum, error) {
           showSection(errorSection, "/error/400");
           errorContainer.innerHTML =
             "<h1>400 Bad Request</h1><p>Your request could not be understood.</p>";
-          isErrorState = true;
           console.log(error)
           break;
         case 404:
@@ -28,21 +26,21 @@ function errorPage(errNum, error) {
           errorContainer.innerHTML =
             "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
             console.log(error)
-          isErrorState = true;
           break;
         case 500:
           showSection(errorSection, "/error/500");
           errorContainer.innerHTML =
             "<h1>500 Internal Server Error</h1><p>Something went wrong.</p>";
             console.log(error)
-          isErrorState = true;
           break;
+          case 405:
+            showSection(mainSection, "/");
+            break;
         default:
           showSection(errorSection, "/error/404");
           errorContainer.innerHTML =
             "<h1>404 Not Found</h1><p>The resource you are looking for could not be found.</p>";
             console.log(error)
-          isErrorState = true;
           break;
       }
     })
@@ -52,4 +50,3 @@ function errorPage(errNum, error) {
 }
 
 window.errorPage = errorPage;
-window.isErrorState = isErrorState;

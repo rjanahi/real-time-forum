@@ -39,89 +39,109 @@ function showSection(sectionToShow, urlSuffix) {
     // Update the URL
     history.pushState(null, '', urlSuffix);
 }
-if (isErrorState) {
-    console.warn("script.js! Cannot send data; application is in an error state.");
-} else {
+
 
     document.addEventListener('DOMContentLoaded', () => {
-        
+
         checkSession();
-                if (postsButton) {
-                    postsButton.addEventListener('click', () => {
-                        checkSession().then(session => {
-                            if(session.loggedIn){
-                                showSection(postPageSection, '/posts');
-
-                          loadPosts();
-                            }
-                        
-                    })
-                });
-                }
-                if (createPostButton) createPostButton.addEventListener('click', () => showSection(createPostSection, "/create-post"))
-
-                if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
-
-                if (postMyPageButton) postMyPageButton.addEventListener('click', loadMyPosts);
-                if (postsPageButton) {
-                    postsPageButton.addEventListener('click', () => {
+        if (postsButton) {
+            postsButton.addEventListener('click', () => {
+                checkSession().then(session => {
+                    if (session.loggedIn) {
                         showSection(postPageSection, '/posts');
-
                         loadPosts();
-                    });
+                    }
+
+                })
+            });
+        }
+        if (createPostButton) createPostButton.addEventListener('click', () => {
+            checkSession().then(session => {
+                if (session.loggedIn) {
+                    showSection(createPostSection, "/create-post")
                 }
+            })
+        });
+        if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
 
+        if (postMyPageButton) postMyPageButton.addEventListener('click', () => {
+            checkSession().then(session => {
+                if (session.loggedIn) {
+                    loadMyPosts();
+                }
+            })
+        });
 
-                categoryButtons.forEach(button => {
-                    button.addEventListener('click', () => {
+        if (postsPageButton) {
+            postsPageButton.addEventListener('click', () => {
+                checkSession().then(session => {
+                    if (session.loggedIn) {
+                        showSection(postPageSection, '/posts');
+                        loadPosts();
+                    }
+                });
+            })
+        };
+
+        categoryButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                checkSession().then(session => {
+                    if (session.loggedIn) {
                         const category = button.value; // Get the category from the button's value
                         loadCategoryPosts(category);
                         showSection(postPageSection, '/category/' + category); // Show posts of the selected category
-                    });
+                    };
                 });
-                // Create form submission
-                const createPostForm = document.getElementById('createPostForm');
 
-                //Create form
-                if (createPostForm) {
-                    createPostForm.addEventListener('submit', function (event) {
-                        if (isErrorState) {
-                            console.warn("createPostForm! Cannot send data; application is in an error state.");
-                            return;
-                        }
-                        event.preventDefault(); // Prevent default form submission
-
-                        // Get selected categories (checkboxes)
-                        const selectedCategories = [];
-                        document.querySelectorAll('input[name="category"]:checked').forEach((checkbox) => {
-                            selectedCategories.push(checkbox.value);
-                        });
-
-                        const postData = {
-                            title: document.getElementById('title').value,
-                            content: document.getElementById('content').value,
-                            categories: selectedCategories // Send array of selected categories
-                        };
-
-                        fetch('/create-post', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify(postData),
-                            credentials: 'include' // Ensures session cookies are sent
-                        })
-                            .then(response => response.json())
-                            .then(data => {
-                                console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
-                                if (data.success) createPostForm.reset();
-                                socket.send(JSON.stringify({ type: "new_post" }));
-                                showSection(postPageSection, '/posts');
-                            })
-                            .catch(error => errorPage(500));
-                    });
-                }
-
-            
+            });
         });
+        // Create form submission
+        const createPostForm = document.getElementById('createPostForm');
+
+        //Create form
+        if (createPostForm) {
+            createPostForm.addEventListener('submit', function (event) {
+                
+                event.preventDefault(); // Prevent default form submission
+
+                checkSession().then(session => {
+                    if (!session.loggedIn) {
+                        console.warn("User not logged in. Cannot create post.");
+                        showSection(logInSection, '/login');
+                        return;
+                    }
+                });
+                // Get selected categories (checkboxes)
+                const selectedCategories = [];
+                document.querySelectorAll('input[name="category"]:checked').forEach((checkbox) => {
+                    selectedCategories.push(checkbox.value);
+                });
+
+                const postData = {
+                    title: document.getElementById('title').value,
+                    content: document.getElementById('content').value,
+                    categories: selectedCategories // Send array of selected categories
+                };
+
+                fetch('/create-post', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(postData),
+                    credentials: 'include' // Ensures session cookies are sent
+                })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
+                        if (data.success) createPostForm.reset();
+                        socket.send(JSON.stringify({ type: "new_post" }));
+                        showSection(postPageSection, '/posts');
+                    })
+                    .catch(error => errorPage(500));
+            });
+        }
+
+
+    });
 
 
 
@@ -146,7 +166,7 @@ if (isErrorState) {
                 .catch(error => errorPage(500));
         });
     }
-    
+
     if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
     // Event listeners for navigation buttons
     if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
@@ -164,10 +184,7 @@ if (isErrorState) {
     // Registration form 
     if (registrationForm) {
         registrationForm.addEventListener('submit', function (event) {
-            if (isErrorState) {
-                console.warn("registrationForm! Cannot send data; application is in an error state.");
-                return;
-            }
+           
             event.preventDefault(); // Prevent default form submission
 
             const feedbackMessage = document.getElementById('feedbackMessage');
@@ -210,10 +227,7 @@ if (isErrorState) {
     // Login form 
     if (loginForm) {
         loginForm.addEventListener('submit', function (event) {
-            if (isErrorState) {
-                console.warn("loginForm! Cannot send data; application is in an error state.");
-                return;
-            }
+            
             event.preventDefault(); // Prevent default form submission
 
             const loginData = {
@@ -251,11 +265,8 @@ if (isErrorState) {
         });
     }
 
-
-
     function toggleDropdown(id) {
         var dropdown = document.getElementById(id);
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block'; // Toggle visibility
     }
 
-}

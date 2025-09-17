@@ -3,22 +3,34 @@ let thisPostId = null;
 
 
 function loadCommentsForPost(postId) {
-    if (isErrorState) {
-        console.warn("Cannot send data; application is in an error state.");
-        return; 
-    }
+   
     fetch(`/comments?post_id=${postId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     })
         .then(response => {
-            if (response.status === 404) {
-                errorPage(404);
-                return;
+            switch (response.status) {
+                case 401:
+                    errorPage(401); // Handle unauthorized access
+                    return;
+                case 403:
+                    errorPage(403); // Handle forbidden access
+                    return;
+                case 404:
+                    errorPage(404);
+                    return;
+                case 405:
+                    errorPage(405);
+                    return;
+                case 500:
+                    errorPage(500);
+                    return;
+                default:
+                    break;
             }
             if (!response.ok) {
-                throw new Error('Failed to load comments');
+                throw new Error('Network response was not ok');
             }
             return response.json();
         })
