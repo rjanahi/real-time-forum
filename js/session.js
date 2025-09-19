@@ -56,11 +56,6 @@ function checkSession() {
                 //  Show logout & posts buttons
                 if (logoutButton) logoutButton.style.display = "inline-block";
                 if (postsButton) postsButton.style.display = "inline-block";
-
-                if (window.location.pathname === "/login" || window.location.pathname === "/signup") {
-                    showSection(mainSection, "/");
-                }
-
             } else {
                 console.log(" User is not logged in.");
 
@@ -90,76 +85,8 @@ function escapeHTML(str = "") {
 }
 
 //handle back or forward
-window.addEventListener("popstate", () => {
-    const path = window.location.pathname;
-
-    console.log("Popstate event:", path);
-    checkSession().then(session => {
-        switch (true) {
-            case path === "/":
-                showSection(mainSection, "/");
-                break;
-            case path === "/signup":
-                if (session && session.loggedIn) {
-                    showSection(mainSection, "/");
-                    return;
-                }
-                showSection(signUpSection, "/signup")
-                    ;
-                break;
-            case path === "/login":
-                if (session && session.loggedIn) {
-                    showSection(mainSection, "/");
-                    return;
-                }
-                showSection(logInSection, "/login");
-                break;
-            case path === "/posts":
-                if (session && !session.loggedIn) {
-                    showSection(logInSection, "/login");
-                    return;
-                }
-                showSection(postPageSection, "/posts");
-                loadPosts();
-                break;
-            case path === "/create-post":
-                if (session && !session.loggedIn) {
-                    showSection(logInSection, "/login");
-                    return;
-                }
-                showSection(createPostSection, "/create-post");
-                break;
-            case path === "/about-us":
-                showSection(aboutUsSection, "/about-us");
-                break;
-            case /^\/comment\/\d+$/.test(path): { // dynamic comment routes
-                const postId = path.split("/").pop();
-
-                if (session && !session.loggedIn) {
-                    showSection(logInSection, "/login");
-                    return;
-                }
-                showSection(commentsSection, path);
-                loadCommentsForPost(postId)
-                break;
-            }
-            case /^\/category\/[^/]+$/.test(path): { // dynamic category routes
-                const categoryId = path.split("/").pop();
-
-                if (session && !session.loggedIn) {
-                    showSection(logInSection, "/login");
-                    return;
-                }
-                showSection(postPageSection, "/category/" + categoryId);
-                loadCategoryPosts(categoryId);
-
-                break;
-            }
-
-            default:
-                showSection(mainSection, "/");
-        }
-    });
+window.addEventListener("popstate", (e) => {
+    (async () => { await renderFromState(e.state); })();
 });
 
 window.checkSession = checkSession;

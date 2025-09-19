@@ -40,7 +40,7 @@ function likeDislikeComment(commentId, isLike) {
             if (!response.ok) {
                 throw new Error('Network response was not ok');
             }
-            response.json()
+            return response.json()
         })
         .then(data => {
             console.log(" Like/Dislike Comment Response:", data);
