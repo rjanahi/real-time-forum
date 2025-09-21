@@ -1,5 +1,4 @@
-
-function errorPage(errNum, error) {
+function errorPage(errNum, error = "" ) {
   const errorSection = document.getElementById("errorSection");
   const errorContainer = document.getElementById("errorContainer");
   const show = document.getElementById('show');
@@ -13,6 +12,9 @@ function errorPage(errNum, error) {
     .then((html) => {
       console.log(html);
       show.hidden = true;
+      if (error == undefined) {
+        return;
+      }
       // Show the error section based on the error number
       switch (errNum) {
         case 400:

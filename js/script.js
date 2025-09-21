@@ -71,7 +71,7 @@ async function renderFromState(state) {
                 return;
             }
             showSection(postPageSection, "/posts", state, { updateHistory: false });
-            if (typeof loadPosts === "function") loadPosts();
+            loadPosts();
             break;
 
         case "myPosts":
@@ -80,7 +80,7 @@ async function renderFromState(state) {
                 return;
             }
             showSection(postPageSection, "/myPosts", state, { updateHistory: false });
-            if (typeof loadMyPosts === "function") loadMyPosts();
+            loadMyPosts();
             break;
 
         case "createPost":
@@ -117,7 +117,7 @@ async function renderFromState(state) {
                 return;
             }
             showSection(commentsSection, `/comment/${state.postId}`, state, { updateHistory: false });
-            if (typeof loadCommentsForPost === "function") loadCommentsForPost(state.postId);
+            loadCommentsForPost(state.postId);
             break;
 
         case "category":
@@ -126,7 +126,7 @@ async function renderFromState(state) {
                 return;
             }
             showSection(postPageSection, `/category/${state.category}`, state, { updateHistory: false });
-            if (typeof loadCategoryPosts === "function") loadCategoryPosts(state.category);
+            loadCategoryPosts(state.category);
             break;
 
         default:
@@ -160,8 +160,14 @@ async function routeByPath(path) {
     return renderFromState({ route: "home" });
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+async function refresh() {
+    const initialState = routeByPath(location.pathname);
+    // render based on that state (awaits checkSession inside)
+    await renderFromState(initialState);
+}
 
+document.addEventListener('DOMContentLoaded', () => {
+    refresh();
     checkSession();
     if (postsButton) {
         postsButton.addEventListener('click', () => {
@@ -181,11 +187,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         })
     });
-    if (returnToPost) returnToPost.addEventListener('click', () => showSection(postPageSection, '/posts'));
 
     if (postMyPageButton) postMyPageButton.addEventListener('click', () => {
         checkSession().then(session => {
             if (session.loggedIn) {
+                showSection(postPageSection, '/myPosts');
                 loadMyPosts();
             }
         })
@@ -262,31 +268,41 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(postData),
                 credentials: 'include' // Ensures session cookies are sent
             })
-                .then(response => response.json())
+                .then(response => {
+                    if (!response.ok) {
+                        errorPage(response.status, response.statusText);
+                        throw response;
+                    }
+                    return response.json()
+                })
                 .then(data => {
                     console.log(data.success ? "Post created successfully!" : "Error: " + data.message);
                     if (data.success) createPostForm.reset();
                     socket.send(JSON.stringify({ type: "new_post" }));
                     showSection(postPageSection, '/posts');
                 })
-                .catch(error => errorPage(500));
+                .catch(error => errorPage(error.status, error.statusText));
         });
     }
 
 
 });
 
-
-
 // Logout functionality
-if (logoutButton ) {
+if (logoutButton) {
     logoutButton.addEventListener('click', function () {
 
         fetch('/logout', {
             method: 'POST',
             credentials: 'include'
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    errorPage(response.status, response.statusText);
+                    throw response;
+                }
+                return response.json()
+            })
             .then(data => {
                 console.log(data.message);
                 disconnectWeb();
@@ -296,11 +312,9 @@ if (logoutButton ) {
                 });
 
             })
-            .catch(error => errorPage(500));
+            .catch(error => errorPage(error.status, error.statusText));
     });
 }
-
-
 if (aboutUsButton) aboutUsButton.addEventListener('click', () => showSection(aboutUsSection, '/about-us'));
 // Event listeners for navigation buttons
 if (signUpButton) signUpButton.addEventListener('click', () => showSection(signUpSection, '/signup'));
@@ -340,7 +354,13 @@ if (registrationForm) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(formData),
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    errorPage(response.status, response.statusText);
+                    throw response;
+                }
+                return response.json()
+            })
             .then(data => {
                 feedbackMessage.textContent = data.success ? 'Registration successful!' : (data.message || 'Registration failed.');
                 feedbackMessage.style.color = data.success ? 'green' : 'red';
@@ -353,7 +373,7 @@ if (registrationForm) {
             .catch(error => {
                 feedbackMessage.textContent = 'An error occurred: ' + error.message;
                 feedbackMessage.style.color = 'red';
-                errorPage(500)
+                errorPage(error.status, error.statusText);
             });
     });
 }
@@ -375,7 +395,13 @@ if (loginForm) {
             body: JSON.stringify(loginData),
             credentials: 'include' // Allows cookies to be sent with the request
         })
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    errorPage(response.status, response.statusText);
+                    throw response;
+                }
+                return response.json()
+            })
             .then(data => {
                 console.log(data.message);
                 if (data.message === "Login successful.") {
@@ -395,7 +421,7 @@ if (loginForm) {
                     loginForm.reset();
                 }
             })
-            .catch(error => errorPage(500));
+            .catch(error => errorPage(error.status, error.statusText));
     });
 }
 

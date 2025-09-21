@@ -61,16 +61,13 @@ function connectWebSocket(userId) {
 
       getInteractions(msg.post_id);
       if (window.location.pathname.includes(`Liked`)) {
-
         loadCategoryPosts('Liked');
       }
       return;
     }
 
     if (msg.type === "new_commentLike") {
-
       getInteractions(null, msg.comment_id);
-
       return;
     }
 

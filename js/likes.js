@@ -18,27 +18,11 @@ function likeDislikeComment(commentId, isLike) {
         credentials: 'include'
     })
         .then(response => {
-            switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-                    break;
-            }
+
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                errorPage(response.status, response.statusText);
+                throw response;
+
             }
             return response.json()
         })
@@ -53,7 +37,7 @@ function likeDislikeComment(commentId, isLike) {
             }
             socket.send(JSON.stringify({ type: "new_commentLike", comment_id: parseInt(commentId), is_like: isLike }));
         })
-        .catch(error => errorPage(500));
+        .catch(err => errorPage(err.status, err.statusText));
 }
 
 function likeDislikePost(postId, isLike) {
@@ -72,7 +56,13 @@ function likeDislikePost(postId, isLike) {
         body: JSON.stringify({ post_id: postId, is_like: isLike }),
         credentials: 'include'
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                errorPage(response.status, response.statusText);
+                throw response;
+            }
+            return response.json()
+        })
         .then(data => {
             console.log(" Like/Dislike Response:", data);
 
@@ -86,9 +76,9 @@ function likeDislikePost(postId, isLike) {
             }
             socket.send(JSON.stringify({ type: "new_postLike", post_id: parseInt(postId), is_like: isLike }));
         })
-        .catch(error => {
-            console.error(' Error:', error);
-            errorPage(500)
+        .catch(err => {
+            console.error(' Error:', err);
+            errorPage(err.status, err.statusText);
         });
 }
 
@@ -102,7 +92,13 @@ function getInteractions(postId, commentId = null) {
         body: JSON.stringify(requestBody),
         credentials: 'include'
     })
-        .then(response => response.json())
+        .then(response => {
+            if (!response.ok) {
+                errorPage(response.status, response.statusText);
+                throw response;
+            }
+            return response.json()
+        })
         .then(data => {
             console.log(" Updated Interaction Data:", data);
 
@@ -127,7 +123,7 @@ function getInteractions(postId, commentId = null) {
                 if (dislikesElement) dislikesElement.innerText = `Dislikes: ${data.dislikes}`;
             }
         })
-        .catch(error => errorPage(500));
+        .catch(err => errorPage(err.status, err.statusText));
 }
 
 window.getInteractions = getInteractions;

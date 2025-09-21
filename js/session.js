@@ -4,29 +4,9 @@ function checkSession() {
         credentials: 'include'
     })
         .then(response => {
-            console.log(" Session Check Response Status:", response.status);
-            switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-
-                    break;
-            }
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                errorPage(response.status, response.statusText);
+                throw response;
             }
             return response.json();
 
@@ -70,7 +50,7 @@ function checkSession() {
             return data;
         })
         .catch(error => {
-            errorPage(500, error);
+            errorPage(error.status, error.statusText);
             return { loggedIn: false, userID: null };
         });
 }

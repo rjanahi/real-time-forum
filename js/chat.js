@@ -22,27 +22,9 @@ function fetchUserList() {
     credentials: "include",
   })
     .then(response => {
-      switch (response.status) {
-        case 401:
-          errorPage(401); // Handle unauthorized access
-          return;
-        case 403:
-          errorPage(403); // Handle forbidden access
-          return;
-        case 404:
-          errorPage(404);
-          return;
-        case 405:
-          errorPage(405);
-          return;
-        case 500:
-          errorPage(500);
-          return;
-        default:
-          break;
-      }
       if (!response.ok) {
-        throw new Error('Network response was not ok');
+        errorPage(response.status, response.statusText);
+        throw response;
       }
       return response.json();
     })
@@ -85,7 +67,7 @@ function fetchUserList() {
         });
       }
     })
-    .catch((err) => console.log(err));
+    .catch((err) => errorPage(err.status, err.statusText));
 }
 
 function setupChatForm() {
@@ -112,7 +94,14 @@ function setupChatForm() {
 function loadMessages(withId, offset = 0) {
 
   fetch(`/messages?with=${withId}&offset=${offset}`, { credentials: "include" })
-    .then((res) => res.json())
+    .then((res) => {
+      if (!res.ok) {
+        // Pass the actual status code to your error handler
+        errorPage(res.status, res.statusText);
+        throw res;
+      }
+      return res.json()
+    })
     .then((messages) => {
       if (!messages || !Array.isArray(messages)) {
         console.warn("No messages received or invalid format.");
@@ -122,7 +111,7 @@ function loadMessages(withId, offset = 0) {
       messages.forEach((msg) => prependMessageToChat(msg));
       throttle = false;
     })
-    .catch((err) => console.log(err));
+    .catch((err) => errorPage(err.status, err.statusText));
 }
 
 function prependMessageToChat(msg) {

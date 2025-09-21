@@ -6,27 +6,10 @@ function loadPosts() {
         credentials: 'include'
     })
         .then(response => {
-             switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-                    break;
-            }
+
             if (!response.ok) {
-                throw new Error('Failed to fetch posts');
+                errorPage(response.status, response.statusText);
+                throw response;
             }
             return response.json();
         })
@@ -75,11 +58,14 @@ function loadPosts() {
             });
 
             document.querySelectorAll('.commentsButton').forEach(button => {
-                button.addEventListener('click', () => loadCommentsForPost(button.dataset.postId));
+                button.addEventListener('click', () => {
+                    showSection(commentsSection, `/comment/${button.dataset.postId}`, { route: "comment", postId: button.dataset.postId }, { updateHistory: true });
+                    loadCommentsForPost(button.dataset.postId)
+                });
             });
 
         })
-        .catch(error => errorPage(500));
+        .catch(error => errorPage(error.status, error.statusText));
 }
 
 //load only user posts
@@ -91,29 +77,9 @@ function loadMyPosts() {
         credentials: 'include'
     })
         .then(response => {
-
-            switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-                    break;
-            }
-           
             if (!response.ok) {
-                throw new Error('Failed to fetch posts');
+                errorPage(response.status, response.statusText);
+                throw response;
             }
             return response.json();
         })
@@ -166,7 +132,7 @@ function loadMyPosts() {
             });
 
         })
-        .catch(error => errorPage(500));
+        .catch(err => errorPage(err.status, err.statusText));
 }
 
 //load posts with specific category
@@ -178,33 +144,15 @@ function loadCategoryPosts(category) {
         credentials: 'include'
     })
         .then(response => {
-             switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-                    break;
-            }
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                errorPage(response.status, response.statusText);
+                throw response;
             }
             return response.json();
         })
         .then(posts => {
             const postContainer = document.querySelector('.container-post');
-            
+
             if (!postContainer) {
                 console.error("Post container not found!");
                 return;
@@ -262,7 +210,7 @@ function loadCategoryPosts(category) {
                 button.addEventListener('click', () => loadCommentsForPost(button.dataset.postId));
             });
         })
-        .catch(error => errorPage(500));
+        .catch(err => errorPage(err.status, err.statusText));
 }
 
 window.loadPosts = loadPosts;

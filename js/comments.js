@@ -3,34 +3,16 @@ let thisPostId = null;
 
 
 function loadCommentsForPost(postId) {
-   
+
     fetch(`/comments?post_id=${postId}`, {
         method: 'GET',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include'
     })
         .then(response => {
-            switch (response.status) {
-                case 401:
-                    errorPage(401); // Handle unauthorized access
-                    return;
-                case 403:
-                    errorPage(403); // Handle forbidden access
-                    return;
-                case 404:
-                    errorPage(404);
-                    return;
-                case 405:
-                    errorPage(405);
-                    return;
-                case 500:
-                    errorPage(500);
-                    return;
-                default:
-                    break;
-            }
             if (!response.ok) {
-                throw new Error('Network response was not ok');
+                errorPage(response.status, response.statusText);
+                throw response;
             }
             return response.json();
         })
@@ -47,7 +29,6 @@ function loadCommentsForPost(postId) {
             const comments = parsedResponse.comments;
 
             commentsSection.innerHTML = `
-        <button id="return-to-posts" class="return-button">Return</button>
         <div class="comment-post">
             <h2>${escapeHTML(post.title)}</h2>
             <p>${escapeHTML(post.content)}</p>
@@ -96,16 +77,6 @@ function loadCommentsForPost(postId) {
                 });
             }
 
-            showSection(commentsSection, `/comment/${postId}`);
-
-            const returnBtn = document.getElementById("return-to-posts");
-            if (returnBtn) {
-                returnBtn.addEventListener('click', () => {
-                    showSection(postPageSection, `/posts`);
-                    loadPosts();
-                });
-            }
-
             document.getElementById('commentForm').addEventListener('submit', function (event) {
                 event.preventDefault();  // Prevent default form submission
 
@@ -133,7 +104,13 @@ function loadCommentsForPost(postId) {
                     credentials: "include",
                     body: requestBody
                 })
-                    .then(response => response.json())
+                    .then(response => {
+                        if (!response.ok) {
+                            errorPage(response.status, response.statusText);
+                            throw response;
+                        }
+                        return response.json()
+                    })
                     .then(data => {
                         console.log(" Server Response:", data);
 
@@ -144,16 +121,16 @@ function loadCommentsForPost(postId) {
                             console.log(" Error: " + data.message);
                         }
                         console.log(" Comment ID:", data.comment_id);
-                        socket.send(JSON.stringify({ type: "new_comment" , post_id: parseInt(postID) , comment_id: data.comment_id}));
+                        socket.send(JSON.stringify({ type: "new_comment", post_id: parseInt(postID), comment_id: data.comment_id }));
                     })
-                    .catch(error => errorPage(500));
+                    .catch(err => errorPage(err.status, err.statusText));
             });
 
         })
-        .catch(error => {
-            console.error(" Error loading comments:", error);
+        .catch(err => {
+            console.error(" Error loading comments:", err);
             commentsSection.innerHTML = "<p>Failed to load comments.</p>";
-            errorPage(500)
+            errorPage(err.status, err.statusText);
         });
 }
 
