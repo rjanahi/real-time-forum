@@ -70,6 +70,8 @@ func Register(db *sql.DB, w http.ResponseWriter, r *http.Request) {
 			errorMessage = "Email already exists"
 		case 5:
 			errorMessage = "Invalid email format"
+		case 6:
+			errorMessage = "Invalid name format. Names should only contain alphabetic characters and spaces."
 		case 7:
 			errorMessage = "Invalid password format. Your password must be at least 10 characters long and contain uppercase, lowercase, numbers, and special characters."
 		default:
@@ -137,12 +139,18 @@ func ValidateUser(username, email, password, fname, lname, age, gender string, d
 		return false, 2
 	}
 
+	
+
 	if !ValidateEmailFormat(email) {
 		return false, 5
 	}
 
 	if checkIfEmaileExists(db, email) {
 		return false, 3
+	}
+
+	if checkIfNameFormatInvalid(fname) || checkIfNameFormatInvalid(lname) {
+		return false, 6
 	}
 
 	if !CheckIfPassValid(password) {
@@ -213,6 +221,12 @@ func ValidateEmailFormat(email string) bool {
 	// Check if email matches the regexp
 	return emailRegex.MatchString(email)
 }
+
+func checkIfNameFormatInvalid(name string) bool {
+	nameRegex := regexp.MustCompile(`^[a-zA-Z]+(?: [a-zA-Z]+)*$`)
+	return !nameRegex.MatchString(name)
+}
+
 
 func CheckIfPassValid(pass string) bool {
 	if len(pass) < 10 {

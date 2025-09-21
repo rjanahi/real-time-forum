@@ -339,10 +339,10 @@ if (registrationForm) {
         feedbackMessage.textContent = '';
 
         const formData = {
-            username: document.getElementById('username').value,
-            fname: document.getElementById('fname').value,
-            lname: document.getElementById('lname').value,
-            email: document.getElementById('email').value,
+            username: escapeHTML(document.getElementById('username').value),
+            fname: escapeHTML(document.getElementById('fname').value),
+            lname: escapeHTML(document.getElementById('lname').value),
+            email: escapeHTML(document.getElementById('email').value),
             age: parseInt(document.getElementById('age').value, 10),
             gender: document.getElementById('gender').value,
             password: document.getElementById('password').value,
@@ -356,6 +356,9 @@ if (registrationForm) {
         })
             .then(response => {
                 if (!response.ok) {
+                    if (response.status === 400) {
+                        return response.json();
+                    }
                     errorPage(response.status, response.statusText);
                     throw response;
                 }
