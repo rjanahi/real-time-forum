@@ -307,10 +307,7 @@ if (logoutButton) {
                 console.log(data.message);
                 disconnectWeb();
                 socket.send(JSON.stringify({ type: "new_user" }));
-                checkSession().then(() => {
-                    showSection(mainSection, '/');
-                });
-
+                showSection(mainSection, '/');
             })
             .catch(error => errorPage(error.status, error.statusText));
     });
@@ -370,6 +367,9 @@ if (registrationForm) {
                 if (data.success) {
                     feedbackMessage.textContent = '';
                     registrationForm.reset();
+                     if (socket && socket.readyState === WebSocket.OPEN) {
+                        socket.send(JSON.stringify({ type: "new_user" }));
+                    }
                     showSection(logInSection, '/login'); // Navigate to login section
                 }
             })
@@ -400,6 +400,9 @@ if (loginForm) {
         })
             .then(response => {
                 if (!response.ok) {
+                    if (response.status === 401) {
+                        return response.json();
+                    }
                     errorPage(response.status, response.statusText);
                     throw response;
                 }
