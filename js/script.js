@@ -353,7 +353,7 @@ if (registrationForm) {
         })
             .then(response => {
                 if (!response.ok) {
-                    if (response.status === 400) {
+                    if (response.status === 400 || response.status === 401) {
                         return response.json();
                     }
                     errorPage(response.status, response.statusText);
@@ -400,7 +400,7 @@ if (loginForm) {
         })
             .then(response => {
                 if (!response.ok) {
-                    if (response.status === 401) {
+                    if (response.status === 400 || response.status === 401) {
                         return response.json();
                     }
                     errorPage(response.status, response.statusText);

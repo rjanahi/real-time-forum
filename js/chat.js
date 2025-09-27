@@ -277,7 +277,7 @@ function appendMessageToChat(msg) {
 function updateUserListPeriodically() {
   setInterval(() => {
     fetchUserList();
-  }, 300);
+  }, 500);
 }
 
 setupCloseChatBtn();
