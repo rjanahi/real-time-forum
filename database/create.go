@@ -143,5 +143,6 @@ func createMessage(db *sql.DB) error {
         FOREIGN KEY (receiver_id) REFERENCES users(id)
     );`
     _, err := db.Exec(query)
+
 	return err
 }

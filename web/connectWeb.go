@@ -177,15 +177,6 @@ func ConnectWeb(db *sql.DB) {
 	})
 
 	http.HandleFunc("/logout", func(w http.ResponseWriter, r *http.Request) {
-		// Clear the session token cookie
-		cookie := &http.Cookie{
-			Name:     "session_token",
-			Value:    "",
-			Expires:  time.Now().Add(-1 * time.Hour), // Expire immediately
-			HttpOnly: true,
-			Path:     "/",
-		}
-		http.SetCookie(w, cookie)
 
 		// Invalidate session in the database (optional but recommended)
 		cookie, err := r.Cookie("session_token")
@@ -199,6 +190,16 @@ func ConnectWeb(db *sql.DB) {
 			}
 		}
 
+		// Clear the session token cookie
+		cookie = &http.Cookie{
+			Name:     "session_token",
+			Value:    "",
+			Expires:  time.Now().Add(-1 * time.Hour), // Expire immediately
+			HttpOnly: true,
+			Path:     "/",
+		}
+		http.SetCookie(w, cookie)
+
 		response := map[string]string{"message": "Logged out successfully"}
 		w.Header().Set("Content-Type", "application/json")
 		json.NewEncoder(w).Encode(response)
@@ -208,7 +209,12 @@ func ConnectWeb(db *sql.DB) {
 	go chatHub.Run()
 
 	http.HandleFunc("/ws", func(w http.ResponseWriter, r *http.Request) {
-		chat.ServeWs(chatHub, w, r)
+		userID, loggedIn := u.ValidateSession(db, r)
+		if !loggedIn {
+			http.Error(w, "Unauthorized", http.StatusUnauthorized)
+			return
+		}
+		chat.ServeWs(userID, chatHub, w, r)
 	})
 
 	http.HandleFunc("/messages", func(w http.ResponseWriter, r *http.Request) {

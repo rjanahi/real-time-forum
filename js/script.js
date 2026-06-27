@@ -305,8 +305,9 @@ if (logoutButton) {
             })
             .then(data => {
                 console.log(data.message);
-                disconnectWeb();
                 socket.send(JSON.stringify({ type: "new_user" }));
+                disconnectWeb();
+                checkSession();
                 showSection(mainSection, '/');
             })
             .catch(error => errorPage(error.status, error.statusText));

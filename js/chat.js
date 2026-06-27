@@ -119,6 +119,8 @@ function prependMessageToChat(msg) {
   const node = document.createElement("div");
   node.classList.add("chat-message");
 
+  container.removeEventListener
+
   console.log("session user in prepend msg: ", usernameFromSession);
   if (msg.from === loggedInUserId) {
     node.classList.add("my-message");
@@ -274,12 +276,6 @@ function appendMessageToChat(msg) {
   messagesContainer.scrollTop = messagesContainer.scrollHeight;
 }
 
-function updateUserListPeriodically() {
-  setInterval(() => {
-    fetchUserList();
-  }, 500);
-}
-
 setupCloseChatBtn();
 
 function loadAndInitChat(userId) {
@@ -287,7 +283,6 @@ function loadAndInitChat(userId) {
   fetchUserList();
   setupChatForm();
   chatWindow.scrollTop = chatWindow.scrollHeight;
-  updateUserListPeriodically();
 }
 
 function setupScroll(chatUserId) {
@@ -312,7 +307,6 @@ function hideAllSections() {
   document.getElementById("createPostSection").hidden = true;
   document.getElementById("aboutUsSection").hidden = true;
   document.getElementById("commentsSection").hidden = true;
-  document.getElementById("chatSection").hidden = true;
 }
 
 function returnToPosts() {

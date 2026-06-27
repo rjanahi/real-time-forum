@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"strconv"
 	"sync"
 	"time"
 
@@ -97,14 +96,7 @@ func chatKey(a, b int) string {
 	return fmt.Sprintf("%d-%d", b, a)
 }
 
-func ServeWs(hub *Hub, w http.ResponseWriter, r *http.Request) {
-	userIDStr := r.URL.Query().Get("user_id")
-	userID, err := strconv.Atoi(userIDStr)
-	if err != nil || userID <= 0 {
-		http.Error(w, "Invalid user ID", http.StatusBadRequest)
-		return
-	}
-
+func ServeWs(userID int, hub *Hub, w http.ResponseWriter, r *http.Request) {
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		fmt.Println("WebSocket Upgrade Error:", err)
