@@ -34,7 +34,6 @@ function connectWebSocket(userId) {
 
     if (msg.type === "status_update") {
       updateUserStatus(msg.username, msg.status);
-      fetchUserList();
       return;
     }
 

@@ -57,9 +57,9 @@ function fetchUserList() {
             // Append elements
             li.appendChild(usernameSpan);
             li.appendChild(statusDot);
-            if (user.online === true) {
-              li.onclick = () => openChatWith(user.id, user.username);
-            }
+            
+            li.onclick = () => openChatWith(user.id, user.username);
+            
             userList.appendChild(li);
           } else {
             console.log("My username:", Chatusername);
